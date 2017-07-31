@@ -20,3 +20,15 @@ class Word(models.Model):
 
     def __str__(self):
         return str(self.child) + ". Word = " + self.word
+
+#Probably not the best way to do this, but this class provides a way for a user
+#to determine the users that will be able to view her content. Default is ';public;'
+#Usage (when "username" is logged in, trying to access content owned by "owner":
+#   if ';'+username+';' in Viewers.objects.filter(owner="owner").viewers
+#Something like the above. Will need to tweak in practice!
+class Viewers(models.Model):
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    viewers = models.TextField(default=';public;',blank=True,null=True)
+
+    def __str__(self):
+        return str(self.owner.username)+' : '+self.viewers
