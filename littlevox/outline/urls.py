@@ -19,4 +19,5 @@ from . import views
 
 urlpatterns = [
     url(r'^$', views.index, name='index'),
+    url(r'^word_test/', views.word_test, name='word_test')
 ]
