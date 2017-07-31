@@ -26,9 +26,9 @@ class Word(models.Model):
 #Usage (when "username" is logged in, trying to access content owned by "owner":
 #   if ';'+username+';' in Viewers.objects.filter(owner="owner").viewers
 #Something like the above. Will need to tweak in practice!
-class Viewers(models.Model):
+class Viewer(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
-    viewers = models.TextField(default=';public;',blank=True,null=True)
+    viewer = models.CharField(max_length=50)
 
     def __str__(self):
-        return str(self.owner.username)+' : '+self.viewers
+        return str(self.owner.username)+' : '+self.viewer
