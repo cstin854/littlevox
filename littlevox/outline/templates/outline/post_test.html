@@ -1,0 +1,14 @@
+{% extends 'outline/base.html' %}
+
+{% block body %}
+
+{% if request.POST %}
+    There was post by {{ request.user.username }}:
+    {% for key, val in request.POST.items %}
+    <br>{{key}}: {{val}}
+    {% endfor %}
+{% else %}
+    There was no post!
+{% endif %}
+
+{% endblock %}

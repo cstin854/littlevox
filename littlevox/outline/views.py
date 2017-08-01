@@ -78,3 +78,12 @@ class UserFormView(View):
         for key, value in form.errors.items():
             message += value
         return message
+
+
+def register_test(request):
+
+    if request.POST:
+        return render(request, 'outline/post_test.html', {'error_message':'This is only a test!'})
+
+    else:
+        return render(request, 'outline/registration_form_02.html')

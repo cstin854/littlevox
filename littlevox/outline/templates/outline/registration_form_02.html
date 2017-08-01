@@ -1,0 +1,42 @@
+{% extends 'outline/base.html' %}
+{% block title %}Register!{% endblock %}
+
+{% block specific_scripts %}
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.min.css"/>
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker3.min.css"/>
+<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.min.js"></script>
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <h2>Vertical (basic) form</h2>
+    <form action="" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="id_username">Username:</label>
+            <input type="text" class="form-control" required id="id_username" placeholder="Enter username"
+                   name="username">
+        </div>
+        <div class="form-group">
+            <label for="id_password">Password:</label>
+            <input type="password" class="form-control" required id="id_password" placeholder="Enter password"
+                   name="password">
+        </div>
+        <div class="form-group">
+            <label for="id_child">Name of child:</label>
+            <input type="text" class="form-control" required id="id_child" placeholder="Name of child" name="child">
+        </div>
+        <!--#TODO: Implement later!
+      <div class="checkbox">
+        <label><input type="checkbox" name="remember"> Remember me</label>
+      </div> -->
+        <div class="input-group input-append date" id="datePicker">
+            <input type="text" class="form-control" name="date"/>
+            <span class="input-group-addon add-on"><span class="glyphicon glyphicon-calendar"></span></span>
+        </div>
+        <button type="submit" class="btn btn-default">Submit</button>
+    </form>
+</div>
+
+{% include 'outline/datepicker_script.html' %}
+{% endblock %}

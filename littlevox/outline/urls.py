@@ -23,5 +23,6 @@ urlpatterns = [
     url(r'^$', views.index, name='index'),
     url(r'^word_test/', views.word_test, name='word_test'),
     url(r'^user/(?P<user>[A-Za-z0-9]+)/$', views.user_junk, name='user_junk'),
-    url(r'^register/$', views.UserFormView.as_view(), name='register')
+    url(r'^register/$', views.UserFormView.as_view(), name='register'),
+    url(r'^register_test/$', views.register_test, name='register_test'),
 ]
