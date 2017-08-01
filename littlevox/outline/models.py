@@ -25,6 +25,7 @@ class Word(models.Model):
     def set_etymology(self):
         self.etymology = etymology.get_etymology(self.word)
 
+
 # Probably not the best way to do this, but this class provides a way for a user
 # to determine the users that will be able to view her content. Default is ';public;'
 # Usage (when "username" is logged in, trying to access content owned by "owner":

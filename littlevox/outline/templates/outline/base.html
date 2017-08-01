@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>
+        {% block title %}LittleVox
+        {% endblock %}
+    </title>
+    <link href="https://fonts.googleapis.com/css?family=Libre+Baskerville" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    {% load staticfiles %}
+    {% if error_message %}
+        {% include 'outline/error_modal_script.html' %}
+    {% endif %}
+</head>
+
+<body>
+
+    {% if error_message %}
+        {% include 'outline/error_modal_body.html' %}
+    {% endif %}
+
+    <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">LittleVox&#9784;</a>
+            </div>
+
+            <div class="collapse navbar-collapse" id="myNavbar">
+                <ul class="nav navbar-nav">
+                    <li class="active">
+                        <a href="#">
+                            <span class="glyphicon glyphicon-cd" aria-hidden="True">&nbsp;Thing1</span>
+                        </a>
+                    </li>
+                    <li class="">
+                        <a href="#">
+                            <span class="glyphicon glyphicon-music" aria-hidden="True">&nbsp;Thing2</span>
+                        </a>
+                    </li>
+                </ul>
+
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="#"><span class="glyphicon glyphicon-plus"></span>Thing3</a></li>
+                    {% if request.user.username %}
+                    <li>
+                        <a href="#"><span class="glyphicon glyphicon-log-out"></span>
+                            &nbsp;Logout ({{ request.user.username }})
+                        </a>
+                    </li>
+                    {% else %}
+                    <li><a href="#"><span class="glyphicon glyphicon-log-in"></span>&nbsp;Login</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    {% block body %}
+    {% endblock %}
+
+</body>
+</html>

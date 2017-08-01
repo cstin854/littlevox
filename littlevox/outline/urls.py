@@ -17,7 +17,11 @@ from django.conf.urls import url
 from django.contrib import admin
 from . import views
 
+app_name = 'outline'
+
 urlpatterns = [
     url(r'^$', views.index, name='index'),
-    url(r'^word_test/', views.word_test, name='word_test')
+    url(r'^word_test/', views.word_test, name='word_test'),
+    url(r'^user/(?P<user>[A-Za-z0-9]+)/$', views.user_junk, name='user_junk'),
+    url(r'^register/$', views.UserFormView.as_view(), name='register')
 ]
