@@ -25,4 +25,5 @@ urlpatterns = [
     url(r'^user/(?P<user>[A-Za-z0-9]+)/$', views.user_junk, name='user_junk'),
     url(r'^register/$', views.UserFormView.as_view(), name='register'),
     url(r'^register_test/$', views.register_test, name='register_test'),
+    url(r'^itemlist/$', views.itemlist, name='itemlist'),
 ]

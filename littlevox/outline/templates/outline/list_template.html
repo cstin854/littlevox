@@ -1,0 +1,48 @@
+{% extends 'outline/base.html' %}
+
+<!-- pass reference in context to item_list -->
+<!-- Attributes for the "header"
+    title
+    subtitle
+    intro_text -->
+<!-- attributes for each item in item_list
+    body
+    link
+    image -->
+<!-- something like:
+    for item in item_list:
+        do something with item.header
+        do something with item.image
+        do something with item.body
+        do something with item.link
+<!-- pass reference in context to number_of_items -->
+
+{% block body %}
+<div class="container">
+
+  <h1>{{ title }}</h1>
+  <h4>{{ subtitle }}</h4>
+  <p>{{ intro_text }}</p>
+  <hr>
+
+{% for row in itemlist %}
+<div class="container">
+    <div class="row">
+        {% for item in row %}
+        <div class="col-sm-{{ itemlist_col_width }}">
+            {% if item.has_content %}
+            <div class="well">
+                <img class="img-thumbnail" src="{{ item.imgsrc }}"><br>
+                <h1>
+                    {{ item.title }}
+                </h1>
+                {{ item.text }}<br><br>
+                <form action="#" method="get">
+  <button type="submit" class="btn btn-primary btn-lg" formaction="{{ item.link }}">{{ item.link_text }}</button></form>
+            </div> {% endif %}
+        </div>
+        {% endfor %}
+    {% endfor %}
+    </div></div>
+</div>
+{% endblock %}

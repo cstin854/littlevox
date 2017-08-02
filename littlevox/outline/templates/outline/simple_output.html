@@ -1,0 +1,16 @@
+{% extends 'outline/base.html' %}
+
+<!-- Passed a reference to 'title', 'subtitle', and 'content' -->
+{% block body %}
+<div class="container">
+
+    <h1>{{ title }}</h1>
+    <h4>{{ subtitle }}</h4>
+    <hr>
+    <div class="well">
+        {{ content }}
+    </div>
+    <hr>
+</div>
+
+{% endblock %}
