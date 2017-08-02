@@ -175,9 +175,12 @@ def itemlist(request, num_per_row=3, title='List of items.', subtitle="", intro_
         num_per_row = 4
         if 12 % num_per_row != 0 or num_per_row > 6:
             num_per_row = 3
-        for k in range(41):
+        for k in range(72):
             title = 'Title of item #' + str(k+1)
-            imgsrc = "https://upload.wikimedia.org/wikipedia/commons/8/88/Danny_DeVito_cropped_and_edited_for_brightness.jpg"
+            if k%3 == 0:
+                imgsrc = False
+            else:
+                imgsrc = "https://img.cinemablend.com/cb/9/1/9/4/f/f/9194ff31206ae73db1cc2ae3c8ba0647d71fc6f8c0a4ef9f5ed223fec4bc6cba.jpg"
             text = "And here's the explanatory text that goes under the thing."
             link = "http://www.amazon.com/"
             link_text = "Click!"
@@ -228,6 +231,7 @@ def itemlist_gridder(itemlist, num_per_row=3):
     return rows
 
 
+# Simplistic e-mail address validation.
 def email_valid(email):
     email = str(email)
     if '@' not in email:

@@ -25,24 +25,30 @@
   <p>{{ intro_text }}</p>
   <hr>
 
-{% for row in itemlist %}
-<div class="container">
-    <div class="row">
-        {% for item in row %}
-        <div class="col-sm-{{ itemlist_col_width }}">
-            {% if item.has_content %}
-            <div class="well">
-                <img class="img-thumbnail" src="{{ item.imgsrc }}"><br>
-                <h1>
-                    {{ item.title }}
-                </h1>
-                {{ item.text }}<br><br>
-                <form action="#" method="get">
-  <button type="submit" class="btn btn-primary btn-lg" formaction="{{ item.link }}">{{ item.link_text }}</button></form>
-            </div> {% endif %}
-        </div>
-        {% endfor %}
+    <div class="container-fliud">
+
+        {% for row in itemlist %}
+        <div class="row">
+            {% for item in row %}
+            <div class="col-sm-{{ itemlist_col_width }}">
+                {% if item.has_content %}
+                <div class="well">
+                    {% if item.imgsrc %}
+                    <img class="img-thumbnail" src="{{ item.imgsrc }}"><br>{% endif %}
+                    <h1>
+                        {{ item.title }}
+                    </h1>
+                    {{ item.text }}<br><br>
+                    <form action="#" method="get">
+                        <button type="submit" class="btn btn-primary btn-lg" formaction="{{ item.link }}">
+                            {{ item.link_text }}
+                        </button>
+                    </form>
+                </div> {% endif %}
+            </div>
+            {% endfor %}</div>
     {% endfor %}
-    </div></div>
+    </div>
+</div><br>
 </div>
 {% endblock %}
