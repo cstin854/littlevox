@@ -105,47 +105,7 @@ def user_to_itemlist_item(user):
     return ItemListObject(title=title, imgsrc=imgsrc, text=text, link=link, link_text=link_text)
 
 
-class UserFormView(View):
-    form_class = UserForm
-    template_name = 'outline/registration_form.html'
-
-    # Displays a blank form for a user that isn't signed up
-    def get(self, request):
-        form = self.form_class(None)
-        return render(request, self.template_name, {'form': form})
-
-    # Process form data:
-    def post(self, request):
-        form = self.form_class(request.POST)
-
-        if form.is_valid():
-
-            user = form.save(commit=False)
-
-            # normalized data
-            username = form.cleaned_data['username']
-            password = form.cleaned_data['password']
-            user.set_password(password)
-            user.save()
-
-            # returns User object if credentials are valid
-            user = authenticate(username=username, password=password)
-
-            if user is not None:
-                if user.is_active:
-                    login(request, user)
-                    return redirect('outline:index')
-
-        return render(request, self.template_name, {'form': form, 'error_message': self.get_errors(form)})
-
-    def get_errors(self, form):
-        message = ''
-        for key, value in form.errors.items():
-            message += value
-        return message
-
-
-def register_test(request):
+def register(request):
     if request.POST:
 
         retry_flag = False
@@ -191,7 +151,7 @@ def register_test(request):
         # if retry_flag = True, jump back to registration page with error_message in the context
         # else, save and login user, then redirect to a splash page.
         if retry_flag:
-            return render(request, 'outline/registration_form_02.html', {'error_message': error_message})
+            return render(request, 'outline/registration_form.html', {'error_message': error_message})
         else:
             # TODO: (1) Actually register the user, (2) Send to a splash page
             user = User()
@@ -212,7 +172,7 @@ def register_test(request):
                 # return render(request, 'outline/registration_form_02.html', {'error_message': 'Valid registration!'})
 
     else:
-        return render(request, 'outline/registration_form_02.html')
+        return render(request, 'outline/registration_form.html')
 
 
 # Used to R&D the item_list display. Just makes dummy data for display.
