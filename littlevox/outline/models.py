@@ -12,6 +12,16 @@ class Child(models.Model):
     def __str__(self):
         return self.parent_guardian.username + ' : ' + self.name
 
+    def as_itemlist_item(self):
+        item = ItemListObject()
+        item.title = str(self.name)
+        item.imgsrc = False
+        item.text = 'Date of birth: '+str(self.date_of_birth)
+        # url to send for splashpage for that child
+        item.link = '/' + str(self.parent_guardian) + '/' + str(self.name) + '/'
+        item.link_text = str(self.name)+"'s Dashboard"
+        return item
+
 
 class Word(models.Model):
     child = models.ForeignKey(Child, on_delete=models.CASCADE)
@@ -39,3 +49,17 @@ class Viewer(models.Model):
 
     def __str__(self):
         return str(self.owner.username)+' : '+self.viewer
+
+
+class ItemListObject():
+
+    def __init__(self, title=False, imgsrc=False, text=False, link=False, link_text='Click for details.'):
+        self.title = title
+        self.imgsrc = imgsrc
+        self.text = text
+        self.link = link
+        self.link_text = link_text
+        if title == False and imgsrc == False and text == False:
+            self.has_content = False
+        else:
+            self.has_content = True

@@ -53,7 +53,7 @@
                     <li><a href="#"><span class="glyphicon glyphicon-plus"></span>Thing3</a></li>
                     {% if request.user.username %}
                     <li>
-                        <a href="#"><span class="glyphicon glyphicon-log-out"></span>
+                        <a href="{% url 'outline:logout' %}"><span class="glyphicon glyphicon-log-out"></span>
                             &nbsp;Logout ({{ request.user.username }})
                         </a>
                     </li>

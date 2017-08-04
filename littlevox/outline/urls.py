@@ -24,6 +24,9 @@ urlpatterns = [
     url(r'^word_test/', views.word_test, name='word_test'),
     url(r'^user/(?P<user>[A-Za-z0-9]+)/$', views.user_junk, name='user_junk'),
     url(r'^register/$', views.UserFormView.as_view(), name='register'),
+    url(r'^logout/$', views.logout_view, name='logout'),
     url(r'^register_test/$', views.register_test, name='register_test'),
-    url(r'^itemlist/$', views.itemlist, name='itemlist'),
+    url(r'^itemlist/$', views.blank_item_list, name='itemlist'),
+    url(r'^childlist/$', views.all_child_list, name='allchildlist'),
+    url(r'^users/', views.users, name='users'),
 ]

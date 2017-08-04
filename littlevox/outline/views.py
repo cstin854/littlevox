@@ -1,20 +1,20 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-from .models import Word, Child
+from .models import Child, Word, ItemListObject
 from django.contrib.auth.models import User
 from django.views.generic import View
 from .forms import UserForm, UserLogin
 from django.shortcuts import redirect
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from math import ceil as ceiling
-import time
+from .simple_search import get_matches
+from random import sample
 
 
 # Create your views here.
 
 # TODO: Clearly this needs to be cleaned up!
-def index(request):
-    context = {}
+def index(request, context={}):
     context['title'] = 'Splashscreen'
     context['subtitle'] = 'Here be dragons.'
     context['content'] = 'Yo whaddup son?'
@@ -32,6 +32,17 @@ def word_test(request):
     return HttpResponse(html)
 
 
+def logout_view(request):
+    username = request.user.username
+    if not username:
+        username = 'Logout'
+    context = {}
+    context['error_title'] = username
+    context['error_message'] = 'You have been logged out.'
+    logout(request)
+    return index(request, context)
+
+
 # TODO: get_object_or_404 with user
 # this view is just used for testing permissions stuff.
 # Can eventually be deleted.
@@ -47,6 +58,51 @@ def user_junk(request, user, child=None, word=None):
         else:
             html += 'Unrestricted profile!'
     return HttpResponse(html + '<br><br><h1>User accessing content: ' + str(user) + '</h1>')
+
+
+# As of now, this defines a view showing all users.
+# Eventually, this should be changed to have a search function, which should, in turn, utilize
+# the functionality of simple_search.py.
+def users(request):
+    # If landing on the page with GET method
+
+    DEFAULT_SEARCH_RESULTS = 15
+
+    if not request.POST:
+        # TODO: Change this next line when Users have an attribute for 'searchable'
+        folks = sample(list(User.objects.all()), 12)  # Getting a list of all User objects
+        user_items = []  # Initializing an empty list to all ItemListObject representations of Users.
+        for folk in folks:
+            user_items.append(user_to_itemlist_item(folk))
+        context = dict()
+        context['num_per_row'] = 4
+        context['title'] = 'All users'
+        context['intro_text'] = 'List of all users.'
+        context['list_of_items'] = user_items
+        context['search_bar'] = True
+        return itemlist(request, context)
+    # Otherwise, if requesting the page with POST:
+    else:
+        context = dict()
+        context['number_per_row'] = 3
+        context['title'] = 'Search results (' + request.POST['query'] + ')'
+        matches = get_matches(request.POST['query'], User.objects.all(), DEFAULT_SEARCH_RESULTS)
+        context['content'] = 'Stubby stub.'
+        context['search_bar'] = True
+        context['list_of_items'] = []
+        for match in matches:
+            context['list_of_items'].append(user_to_itemlist_item(match))
+
+        return itemlist(request, context)
+
+
+def user_to_itemlist_item(user):
+    title = user.username
+    imgsrc = False  # Could do profile picture at some point.
+    text = user.email
+    link = '/outline/user/' + user.username + '/'
+    link_text = 'View Profile'
+    return ItemListObject(title=title, imgsrc=imgsrc, text=text, link=link, link_text=link_text)
 
 
 class UserFormView(View):
@@ -153,60 +209,80 @@ def register_test(request):
                 login(request, user)
                 return redirect('outline:index')
 
-            # return render(request, 'outline/registration_form_02.html', {'error_message': 'Valid registration!'})
+                # return render(request, 'outline/registration_form_02.html', {'error_message': 'Valid registration!'})
 
     else:
         return render(request, 'outline/registration_form_02.html')
 
 
-# TODO: Purpose of the following view is to have a nice way to display a set of objects. Made good strides.
-def itemlist(request, num_per_row=3, title='List of items.', subtitle="", intro_text="Here are your items:",
-             list_of_items=[]):
-    # number per row must be a factor of 12 for the Bootstrap gridding system to work. If provided with a number per
-    # row value that is not a factor of 12, set num_per_row to 3 by default.
-    if 12 % num_per_row != 0 or num_per_row > 6:
-        num_per_row = 3
-    context = {}
-    context['title'] = title
-    context['subtitle'] = subtitle
-    context['intro_text'] = intro_text
+# Used to R&D the item_list display. Just makes dummy data for display.
+def blank_item_list(request):
     # Generating a dummy list of items to display, if none is provided:
-    if len(list_of_items) == 0:
-        num_per_row = 4
-        if 12 % num_per_row != 0 or num_per_row > 6:
-            num_per_row = 3
-        for k in range(72):
-            title = 'Title of item #' + str(k+1)
-            if k%3 == 0:
-                imgsrc = False
-            else:
-                imgsrc = "https://img.cinemablend.com/cb/9/1/9/4/f/f/9194ff31206ae73db1cc2ae3c8ba0647d71fc6f8c0a4ef9f5ed223fec4bc6cba.jpg"
-            text = "And here's the explanatory text that goes under the thing."
-            link = "http://www.amazon.com/"
+    context = dict()
+    context['error_message'] = 'Empty itemlist requested. Showing dummy content.'
+    context['error_title'] = 'No items requested'
+    context['num_per_row'] = 3
+    context['list_of_items'] = []
+    for k in range(72):
+        title = 'Title of item #' + str(k + 1)
+        if k % 4 == 0:
+            imgsrc = False
+        elif k % 5 == 0:
+            imgsrc = "https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/"
+            imgsrc += "Danny_DeVito_by_Gage_Skidmore.jpg/170px-Danny_DeVito_by_Gage_Skidmore.jpg"
+        else:
+            imgsrc = "https://img.cinemablend.com/cb/9/1/9/4/f/f/9194ff31206ae73db1cc2ae3c8ba0647"
+            imgsrc += "d71fc6f8c0a4ef9f5ed223fec4bc6cba.jpg"
+
+        if k % 4 != 0:
+            text = "Some other explanatory text."
+        else:
+            text = False
+
+        if k % 10 == 0:
+            link_text = "Text 4 buttonz"
+        else:
             link_text = "Click!"
-            list_of_items.append(ItemListObject(title=title, imgsrc=imgsrc, text=text,
-                                                link_text=link_text, link=link))
+
+        link = "http://www.amazon.com/"
+        context['list_of_items'].append(ItemListObject(title=title, imgsrc=imgsrc, text=text,
+                                                       link_text=link_text,
+                                                       link=link))  # TODO: Purpose of the following view is to have a nice way to display a set of objects. Made good strides.
+    return itemlist(request, context)
+
+
+def itemlist(request, context={}):
+    if context == {}:
+        return index(request)
+
+    # number per row must be a factor of 12 for the Bootstrap gridding system to work. If provided with a number per
+    # row value that is not a factor of 12, set num_per_row to 3 by default. Also set the highest number per row
+    # at 4 (at 6, buttons become "crunched").
+
+    try:
+        context['num_per_row']
+    except KeyError:
+        context['num_per_row'] = 3
+
+    if 12 % context['num_per_row'] != 0 or context['num_per_row'] > 4:
+        context['num_per_row'] = 3
 
     # Using itemlist_gridder to create a 2d list
-    context['itemlist'] = itemlist_gridder(list_of_items, num_per_row)
+    context['itemlist'] = itemlist_gridder(context['list_of_items'], context['num_per_row'])
+
     # Setting the column width for display based on the number of items expected per row.
-    context['itemlist_col_width'] = int(12 / num_per_row)
+    context['itemlist_col_width'] = int(12 / context['num_per_row'])
 
     return render(request, 'outline/list_template.html', context)
 
 
-class ItemListObject():
-
-    def __init__(self, title="", imgsrc="", text="", link='#', link_text='Click here for details.'):
-        self.title = title
-        self.imgsrc = imgsrc
-        self.text = text
-        self.link = link
-        self.link_text = link_text
-        if title == "" and imgsrc == "" and text == "":
-            self.has_content = False
-        else:
-            self.has_content = True
+def all_child_list(request):
+    children = Child.objects.all()
+    child_items = []
+    for child in children:
+        child_items.append(child.as_itemlist_item())
+    return itemlist(request, num_per_row=2, title='All children',
+                    intro_text="List of all children", list_of_items=child_items)
 
 
 # This function creates a grid of ItemListObject(s), given a list of ItemListObject(s).
@@ -215,9 +291,9 @@ def itemlist_gridder(itemlist, num_per_row=3):
     # print('len = ',k)
     # print('num per row = ',num_per_row)
     new_list = []
-    num_rows = ceiling(k/num_per_row)
+    num_rows = ceiling(k / num_per_row)
     # print('num rows = ',num_rows)
-    blanks = num_rows*num_per_row - k
+    blanks = num_rows * num_per_row - k
     # print('num of blanks = ',blanks)
     for jimmy in range(blanks):
         itemlist.append(ItemListObject())
@@ -272,3 +348,11 @@ def easy_clean(string):
         if is_alpha(char) or is_numeral(char):
             cleaned += char
     return cleaned
+
+
+def get_list_all_users():
+    users = User.objects.all()
+    user_list = []
+    for user in users:
+        user_list.append(user.username)
+    return user_list

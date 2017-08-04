@@ -20,10 +20,26 @@
 {% block body %}
 <div class="container">
 
-  <h1>{{ title }}</h1>
-  <h4>{{ subtitle }}</h4>
-  <p>{{ intro_text }}</p>
-  <hr>
+    <h1>{{ title }}</h1>
+    <h4>{{ subtitle }}</h4>
+    <p>{{ intro_text }}</p>
+    {% if search_bar %}
+    <div class="row">
+        <div class="col-md-6">
+            <form action="" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Search for user..." name="query">
+                    <span class="input-group-btn">
+        <button class="btn btn-default" type="submit">Go!</button>
+      </span>
+                </div>
+        </div>
+        </form><!-- /input-group -->
+        <div class="col-md-6"></div>
+    </div><!-- /.row -->
+    {% endif %}
+    <hr>
 
     <div class="container-fliud">
 
@@ -36,18 +52,20 @@
                     {% if item.imgsrc %}
                     <img class="img-thumbnail" src="{{ item.imgsrc }}"><br>{% endif %}
                     <h1>
-                        {{ item.title }}
+                        {% if item.title %}{{ item.title }}{% endif %}
                     </h1>
-                    {{ item.text }}<br><br>
+                    {% if item.text %}{{ item.text }}{% endif %}<br><br>
                     <form action="#" method="get">
-                        <button type="submit" class="btn btn-primary btn-lg" formaction="{{ item.link }}">
-                            {{ item.link_text }}
+                        <button type="submit" class="btn btn-primary btn-md" formaction="{{ item.link }}">
+                            {% if item.link_text %}{{ item.link_text }}{% endif %}
                         </button>
                     </form>
-                </div> {% endif %}
+                </div>
+                {% endif %}
             </div>
-            {% endfor %}</div>
-    {% endfor %}
+            {% endfor %}
+        </div>
+        {% endfor %}
     </div>
 </div><br>
 </div>
