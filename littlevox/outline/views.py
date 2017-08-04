@@ -105,6 +105,38 @@ def user_to_itemlist_item(user):
     return ItemListObject(title=title, imgsrc=imgsrc, text=text, link=link, link_text=link_text)
 
 
+def login_view(request):
+    # If POST
+    if request.POST:
+        username = request.POST['username']
+        password = request.POST['password']
+        # Authenticate the user
+        user = authenticate(request, username=username, password=password)
+        # If the user exists and is active, redirect to index with welcome message.
+        if user is not None and user.is_active:
+            login(request, user)
+            return index(request, {'error_title': 'Welcome '+username+'!', 'error_message': 'You have been logged in.'})
+        # Otherwise, redirect back to the login screen with an error message.
+        else:
+            error_message = 'There was an error with your login attempt. Please check your username and '
+            error_message += 'password again. If you believe you are receiving this message in error, '
+            error_message += 'please contact us.'
+            return render(request, 'outline/login_form.html', {'error_message': error_message})
+    # If GET
+    else:
+        # If the user is already logged in, prompt the user to logout or contact admin.
+        if request.user.username:
+            context = {}
+            error_message = 'You are already logged in as user ' + request.user.username
+            error_message += '. Please log out if you believe this is in error or '
+            error_message += 'if you would like to log in as another user.'
+            context['error_message'] = error_message
+            context['error_title'] = 'Already logged in:'
+            return index(request, context)
+        # Otherwise, render the login_form.
+        return render(request, 'outline/login_form.html')
+
+
 def register(request):
     if request.POST:
 

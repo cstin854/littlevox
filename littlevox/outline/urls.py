@@ -24,6 +24,7 @@ urlpatterns = [
     url(r'^word_test/', views.word_test, name='word_test'),
     url(r'^user/(?P<user>[A-Za-z0-9]+)/$', views.user_junk, name='user_junk'),
     url(r'^logout/$', views.logout_view, name='logout'),
+    url(r'^login/$', views.login_view, name='login'),
     url(r'^register/$', views.register, name='register'),
     url(r'^itemlist/$', views.blank_item_list, name='itemlist'),
     url(r'^childlist/$', views.all_child_list, name='allchildlist'),
