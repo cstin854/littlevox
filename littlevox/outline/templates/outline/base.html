@@ -25,7 +25,7 @@
         {% include 'outline/error_modal_body.html' %}
     {% endif %}
 
-    <nav class="navbar navbar-inverse">
+    <nav class="navbar navbar-inverse  navbar-fixed-top">
         <div class="container-fluid">
             <div class="navbar-header">
                 <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
@@ -41,34 +41,44 @@
 
             <div class="collapse navbar-collapse" id="myNavbar">
                 <ul class="nav navbar-nav">
-                    <li class="active">
-                        <a href="#">
-                            <span class="glyphicon glyphicon-cd" aria-hidden="True">&nbsp;Thing1</span>
+                    <li class="active" style="color: #FFFFFF;">
+                        <a href="
+                            {% if request.user.username %}/outline/user/{{ request.user.username }}/
+                            {% else %}{% url 'outline:index' %}
+                            {% endif %}">
+                            <span class="glyphicon glyphicon-home" aria-hidden="True">&nbsp;Dashboard</span>
                         </a>
                     </li>
                     <li class="">
-                        <a href="#">
-                            <span class="glyphicon glyphicon-music" aria-hidden="True">&nbsp;Thing2</span>
+                        <a href="{% url 'outline:users' %}" style="color: #FFFFFF;">
+                            <span class="glyphicon glyphicon-user" aria-hidden="True"></span>
+                                <span class="glyphicon glyphicon-user" aria-hidden="True">&nbsp;Users</span>
                         </a>
                     </li>
+                    <li class="">
+                        <a href="#" style="color: #FFFFFF;">
+                                <span class="glyphicon glyphicon-info-sign" aria-hidden="True">&nbsp;About</span>
+                        </a>
+                    </li>
+
                 </ul>
 
                 <ul class="nav navbar-nav navbar-right">
-                    <li><a href="#"><span class="glyphicon glyphicon-plus"></span>Thing3</a></li>
+                    <li><a href="#" style="color: #FFFFFF;"><span class="glyphicon glyphicon-plus"></span> Add Word</a></li>
                     {% if request.user.username %}
                     <li>
-                        <a href="{% url 'outline:logout' %}"><span class="glyphicon glyphicon-log-out"></span>
+                        <a href="{% url 'outline:logout' %}" style="color: #FFFFFF;"><span class="glyphicon glyphicon-log-out"></span>
                             &nbsp;Logout ({{ request.user.username }})
                         </a>
                     </li>
                     {% else %}
-                    <li><a href="{% url 'outline:login' %}"><span class="glyphicon glyphicon-log-in"></span>&nbsp;Login</a></li>
+                    <li><a href="{% url 'outline:login' %}" style="color: #FFFFFF;"><span class="glyphicon glyphicon-log-in"></span>&nbsp;Login</a></li>
                     {% endif %}
                 </ul>
             </div>
         </div>
     </nav>
-
+    <br><br>
     {% block body %}
     {% endblock %}
 

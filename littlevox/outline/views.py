@@ -3,12 +3,16 @@ from django.http import HttpResponse
 from .models import Child, Word, ItemListObject
 from django.contrib.auth.models import User
 from django.views.generic import View
+from django.views.decorators.cache import patch_cache_control
+from functools import wraps
 from .forms import UserForm, UserLogin
+from django.urls import reverse
 from django.shortcuts import redirect
 from django.contrib.auth import authenticate, login, logout
 from math import ceil as ceiling
 from .simple_search import get_matches
 from random import sample
+from django.views.decorators.cache import cache_control
 
 
 # Create your views here.
@@ -46,35 +50,45 @@ def logout_view(request):
 # TODO: get_object_or_404 with user
 # this view is just used for testing permissions stuff.
 # Can eventually be deleted.
-def user_junk(request, user, child=None, word=None):
-    html = ''
-    for dude in User.objects.all():
-        html += '<br><h1>' + str(dude) + '</h1>'
-        if dude.viewer_set.all():
-            html += '<br>Restricted profile!'
-            html += ' Can ' + str(user) + ' access? '
-            for viewer in dude.viewer_set.all():
-                html += str(user in str(viewer.viewer))
-        else:
-            html += 'Unrestricted profile!'
-    return HttpResponse(html + '<br><br><h1>User accessing content: ' + str(user) + '</h1>')
+def user_junk(request, user):
+    context = dict()
+    context['title'] = str(user)
+    context['intro_text'] = "Permissions for this user."
+    try:
+        user = User.objects.get(username=user)
+    except:
+        request.session['error_message'] = "No such user."
+        return redirect('outline:users')
+    if User.objects.get(username=user).viewer_set.all():
+        context['content'] = "This user has set permissions."
+        context['list_of_items'] = ItemListObject(title="Permy perm.")
+    else:
+        context['content'] = 'This user has NOT set permissions. Profile is public.'
+        context['list_of_items'] = []
+    return itemlist(request, context)
 
 
 # As of now, this defines a view showing all users.
 # Eventually, this should be changed to have a search function, which should, in turn, utilize
 # the functionality of simple_search.py.
+@cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def users(request):
-    # If landing on the page with GET method
 
     DEFAULT_SEARCH_RESULTS = 15
+    context = dict()
 
+    if 'error_message' in request.session:
+        context['error_message'] = request.session['error_message']
+        del request.session['error_message']
+        request.session.modified = True
+
+    # If landing on the page with GET method
     if not request.POST:
         # TODO: Change this next line when Users have an attribute for 'searchable'
-        folks = sample(list(User.objects.all()), 12)  # Getting a list of all User objects
+        folks = sample(list(User.objects.all()), 9)  # Getting a sample of User objects
         user_items = []  # Initializing an empty list to all ItemListObject representations of Users.
         for folk in folks:
             user_items.append(user_to_itemlist_item(folk))
-        context = dict()
         context['num_per_row'] = 4
         context['title'] = 'All users'
         context['intro_text'] = 'List of all users.'
@@ -83,7 +97,6 @@ def users(request):
         return itemlist(request, context)
     # Otherwise, if requesting the page with POST:
     else:
-        context = dict()
         context['number_per_row'] = 3
         context['title'] = 'Search results (' + request.POST['query'] + ')'
         matches = get_matches(request.POST['query'], User.objects.all(), DEFAULT_SEARCH_RESULTS)
@@ -108,12 +121,20 @@ def user_to_itemlist_item(user):
 def login_view(request):
     # If POST
     if request.POST:
+
+        #Gets username and password from POST data.
         username = request.POST['username']
         password = request.POST['password']
         # Authenticate the user
         user = authenticate(request, username=username, password=password)
         # If the user exists and is active, redirect to index with welcome message.
         if user is not None and user.is_active:
+            # TODO: This is not working!
+            if not request.POST.get('remember_me', None):
+                print('Do something! User requested not to be remembered.')
+            else:
+                print('Do something! Used requested to be remembered.')
+            # Logs the user in.
             login(request, user)
             return index(request, {'error_title': 'Welcome '+username+'!', 'error_message': 'You have been logged in.'})
         # Otherwise, redirect back to the login screen with an error message.
@@ -252,11 +273,11 @@ def itemlist(request, context={}):
     # at 4 (at 6, buttons become "crunched").
 
     try:
-        context['num_per_row']
+        context['num_per_row'] = context['num_per_row']
     except KeyError:
         context['num_per_row'] = 3
 
-    if 12 % context['num_per_row'] != 0 or context['num_per_row'] > 4:
+    if 12 % int(context['num_per_row']) != 0 or int(context['num_per_row']) > 4:
         context['num_per_row'] = 3
 
     # Using itemlist_gridder to create a 2d list
@@ -269,12 +290,16 @@ def itemlist(request, context={}):
 
 
 def all_child_list(request):
-    children = Child.objects.all()
+    children = sample(list(Child.objects.all()), min(20, len(Child.objects.all())))
     child_items = []
     for child in children:
         child_items.append(child.as_itemlist_item())
-    return itemlist(request, num_per_row=2, title='All children',
-                    intro_text="List of all children", list_of_items=child_items)
+    context = dict()
+    context['num_per_row'] = 3
+    context['title'] = 'All children'
+    context['intro_text'] = 'List of all children. For development only.'
+    context['list_of_items'] = child_items
+    return itemlist(request, context)
 
 
 # This function creates a grid of ItemListObject(s), given a list of ItemListObject(s).

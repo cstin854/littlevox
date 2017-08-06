@@ -16,7 +16,11 @@ class Child(models.Model):
         item = ItemListObject()
         item.title = str(self.name)
         item.imgsrc = False
-        item.text = 'Date of birth: '+str(self.date_of_birth)
+        item.text = 'Date of birth: '+str(self.date_of_birth)+'<br>'
+        item.text += 'Parent-guardian: '
+        item.text += '<a href="/outline/user/'+str(self.parent_guardian.username)+'/"' + \
+                     '>'+\
+                     str(self.parent_guardian.username)+'</a>'
         # url to send for splashpage for that child
         item.link = '/' + str(self.parent_guardian) + '/' + str(self.name) + '/'
         item.link_text = str(self.name)+"'s Dashboard"
@@ -59,7 +63,9 @@ class ItemListObject():
         self.text = text
         self.link = link
         self.link_text = link_text
-        if title == False and imgsrc == False and text == False:
-            self.has_content = False
+
+    def has_content(self):
+        if self.title == False and self.imgsrc == False and self.text == False:
+            return False
         else:
-            self.has_content = True
+            return True

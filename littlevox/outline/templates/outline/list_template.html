@@ -48,13 +48,19 @@
             {% for item in row %}
             <div class="col-sm-{{ itemlist_col_width }}">
                 {% if item.has_content %}
-                <div class="well">
+                <div class="well" style="background-color: #c4e4ff;">
                     {% if item.imgsrc %}
                     <img class="img-thumbnail" src="{{ item.imgsrc }}"><br>{% endif %}
-                    <h1>
-                        {% if item.title %}{{ item.title }}{% endif %}
-                    </h1>
-                    {% if item.text %}{{ item.text }}{% endif %}<br><br>
+
+                    {% if item.title %}
+                        <h1 class="text-center" style="font-family: 'Righteous', serif;">{{ item.title }}</h1>
+                    <hr>
+                    {% endif %}
+
+                    {% if item.text %}
+                    <blockquote>{{ item.text|safe }}</blockquote>
+                    {% endif %}
+
                     <form action="#" method="get">
                         <button type="submit" class="btn btn-primary btn-md" formaction="{{ item.link }}">
                             {% if item.link_text %}{{ item.link_text }}{% endif %}
