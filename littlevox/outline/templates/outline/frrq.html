@@ -1,0 +1,28 @@
+{% extends 'outline/base.html' %}
+{% block title %}Friend Request{% endblock %}
+
+{% block body %}
+<hr>
+<div class="container">
+    <h1 style="font-family: 'Righteous', serif;">Request: {{ recipient }}</h1>
+    <hr>
+    <form action="" method="post" enctype="multipart/form-data" id="msgform">
+        {% csrf_token %}
+        <label for="message">Message:</label>
+        <div class="form-group">
+            <textarea class="form-control" rows="5" id="message" name="message"></textarea>
+        </div>
+        <input type="hidden" name="recipient" value="{{ recipient }}">
+        <input type="hidden" name="sender" value="{{ sender }}">
+        <input type="hidden" name="date" value="{{ date }}">
+        <hr>
+        <div class="btn-group btn-group-lg">
+            <button type="submit" class="btn btn-primary">Submit &#8921;</button>
+        </div>
+    </form>
+    <br>
+
+
+</div>
+
+{% endblock %}

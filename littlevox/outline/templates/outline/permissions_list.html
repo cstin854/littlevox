@@ -1,0 +1,34 @@
+{% if is_owner %}
+
+    {% if viewer_list %}
+    <p>Authorized viewers of your profile:</p>
+    <ul class="list-group">
+        {% for viewer in viewer_list %}
+        <li class="list-group-item">
+            <h2>{{ viewer.viewer }}</h2>
+            <br>
+            <span class="glyphicon glyphicon-eye-open"></span>&nbsp;
+            <a href="/outline/user/{{ viewer.viewer }}/">View profile.</a>
+            <br>
+            <span class="glyphicon glyphicon-eye-close"></span>&nbsp;
+            <a href="/outline/rm/{{ viewer.viewer }}/">Remove viewing privileges.</a>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <h4>
+        This profile is set to public.
+    </h4>
+    {% endif %}
+    <hr>
+    <span class="glyphicon glyphicon-plus"></span>
+    <a href="{% url 'outline:users' %}">Click here to search for and add viewers.</a>
+
+{% else %}
+
+    Trying to view someone else's permissons? Well, we had better figure out something to put here....<br>
+    Two options<br>
+    (1) Are auth viewer -- show some shiz.<br>
+(2) Not auth viewer -- request access page. <strong>This should be handled in the view.</strong>
+
+{% endif %}

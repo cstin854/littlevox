@@ -1,0 +1,20 @@
+{% extends 'outline/base.html' %}
+{% block title %}Remove Viewer Confirmation{% endblock %}
+
+{% block body %}
+
+<hr>
+<div class="container">
+    Heads up, {{ requester }}! Are you sure you want to revoke viewing privileges from {{ viewer.viewer }}?
+    <br>
+    <form action="" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="checkbox">
+            <label><input type="radio" name="revoke">Yes, revoke viewing privileges.</label>
+        </div>
+        <input type="hidden" value="{{ viewer.viewer }}" name="viewer" />
+        <button type="submit" class="btn btn-default">Submit</button>
+    </form>
+</div>
+
+{% endblock %}

@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-from .models import Child, Word, ItemListObject
+from .models import Child, Word, ItemListObject, Message
 from django.contrib.auth.models import User
 from django.views.generic import View
 from django.views.decorators.cache import patch_cache_control
@@ -13,17 +13,30 @@ from math import ceil as ceiling
 from .simple_search import get_matches
 from random import sample
 from django.views.decorators.cache import cache_control
+from .helper_functions import easy_today
 
 
 # Create your views here.
 
 # TODO: Clearly this needs to be cleaned up!
 def index(request, context={}):
-    context['title'] = 'Splashscreen'
-    context['subtitle'] = 'Here be dragons.'
-    context['content'] = 'Yo whaddup son?'
-    return render(request, 'outline/simple_output.html', context)
 
+    if request.user.username:
+        return redirect('outline:user_junk', user=request.user.username)
+    else:
+        context['title'] = 'Why u here?'
+        context['subtitle'] = 'Here be dragons.'
+        context['content'] = 'Yo whaddup son?'
+        context['dashboard_active'] = True
+        return render(request, 'outline/simple_output.html', context)
+
+
+def addword(request):
+    return index(request, context={'error_message': 'This view is not hooked up yet.'})
+
+
+def addchild(request):
+    return addword(request)
 
 # TODO: This is just a temp view to show all word objects.
 def word_test(request):
@@ -39,43 +52,123 @@ def word_test(request):
 def logout_view(request):
     username = request.user.username
     if not username:
-        username = 'Logout'
-    context = {}
+        username = ''
+    logout(request)
+    context = dict()
     context['error_title'] = username
     context['error_message'] = 'You have been logged out.'
-    logout(request)
     return index(request, context)
 
+
+def remove_viewer(request, user):
+
+    if request.POST:  # if POSt data received
+        if 'revoke' in request.POST:  # if the requester confirmed removing "viewer" from auth'd viewers:
+            requester = User.objects.get(username=request.user.username)
+            viewer = requester.viewer_set.get(viewer=request.POST['viewer'])
+            viewer.delete()
+        # either way, redirect to user dashboard view
+        return redirect('outline:user_junk', user=request.user.username)
+
+    else:  # if no POST data...
+
+        if request.user.username:
+            context = dict()
+            requester = User.objects.get(username=request.user.username)
+            try:
+                viewer = requester.viewer_set.get(viewer=user)
+            except:
+                request.session['error_message'] = "Privileges cannot be revoked because that user does not have" \
+                                                   " permissions to view your profile."
+                return redirect('outline:user_junk', user=requester)
+
+            context['viewer'] = viewer
+            context['requester'] = requester
+            context['dashboard_active'] = True
+
+            return render(request, 'outline/remove_viewer_template.html', context)
+
+        else:
+            return redirect('outline:index')
 
 # TODO: get_object_or_404 with user
 # this view is just used for testing permissions stuff.
 # Can eventually be deleted.
 def user_junk(request, user):
+
     context = dict()
-    context['title'] = str(user)
-    context['intro_text'] = "Permissions for this user."
+
+    if 'error_message' in request.session:
+        context['error_message'] = request.session['error_message']
+        del request.session['error_message']
+        request.session.modified = True
+
+    if 'error_title' in request.session:
+        context['error_title'] = request.session['error_title']
+        del request.session['error_title']
+        request.session.modified = True
+
     try:
         user = User.objects.get(username=user)
     except:
-        request.session['error_message'] = "No such user."
+        request.session['error_message'] = "That user does not exist."
         return redirect('outline:users')
-    if User.objects.get(username=user).viewer_set.all():
-        context['content'] = "This user has set permissions."
-        context['list_of_items'] = ItemListObject(title="Permy perm.")
+
+    context['dashboard_active'] = True
+    context['user'] = user.username
+    try:
+        context['viewer_list'] = list(user.viewer_set.all())
+    except:
+        context['viewer_list'] = False
+
+    try:
+        context['child_list'] = list(user.child_set.all())
+    except:
+        context['child_list'] = False
+
+    if request.user.username == user.username:
+        # Do something when this is the user's dashboard
+        context['dashboard_header'] = "Welcome! This is your dashboard."
+        context['is_owner'] = True
     else:
-        context['content'] = 'This user has NOT set permissions. Profile is public.'
-        context['list_of_items'] = []
-    return itemlist(request, context)
+        # Do something if this is not the user's dashboard.
+        context['dashboard_header'] = "Welcome! You are viewing " + user.username + "'s dashboard."
+        context['is_ownder'] = False
+
+    return render(request, 'outline/dashboard.html', context)
 
 
-# As of now, this defines a view showing all users.
-# Eventually, this should be changed to have a search function, which should, in turn, utilize
-# the functionality of simple_search.py.
+def friend_request(request, recipient):
+    context = dict()
+
+    if request.POST:
+        message = Message()
+        message.date = request.POST['date']
+        message.recipient = User.objects.get(username=request.POST['recipient'])
+        message.sender = request.POST['sender']
+        message.message = request.POST['message']
+        if message.is_valid():
+            message.save()
+            request.session['error_title'] = "Thank you!"
+            request.session['error_message'] = "Your message has been sent."
+        else:
+            request.session['error_title'] = "Thank you!"
+            request.session['error_message'] = "Your message has been processed."
+        return redirect('outline:user_junk', user=request.user.username)
+    else:
+        context['recipient'] = recipient
+        context['user_active'] = True
+        context['date'] = easy_today()
+        context['sender'] = request.user.username
+        return render(request, 'outline/frrq.html', context)
+
+
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def users(request):
 
     DEFAULT_SEARCH_RESULTS = 15
     context = dict()
+    context['users_active'] = True
 
     if 'error_message' in request.session:
         context['error_message'] = request.session['error_message']
@@ -85,10 +178,10 @@ def users(request):
     # If landing on the page with GET method
     if not request.POST:
         # TODO: Change this next line when Users have an attribute for 'searchable'
-        folks = sample(list(User.objects.all()), 9)  # Getting a sample of User objects
+        folks = sample(list(User.objects.all()), 12)  # Getting a sample of User objects
         user_items = []  # Initializing an empty list to all ItemListObject representations of Users.
         for folk in folks:
-            user_items.append(user_to_itemlist_item(folk))
+            user_items.append(user_to_itemlist_item(folk, viewer=request.user.username))
         context['num_per_row'] = 4
         context['title'] = 'All users'
         context['intro_text'] = 'List of all users.'
@@ -104,18 +197,38 @@ def users(request):
         context['search_bar'] = True
         context['list_of_items'] = []
         for match in matches:
-            context['list_of_items'].append(user_to_itemlist_item(match))
+            context['list_of_items'].append(user_to_itemlist_item(match, viewer=request.user.username))
 
         return itemlist(request, context)
 
 
-def user_to_itemlist_item(user):
+def user_to_itemlist_item(user, viewer=False):
     title = user.username
     imgsrc = False  # Could do profile picture at some point.
-    text = user.email
-    link = '/outline/user/' + user.username + '/'
-    link_text = 'View Profile'
-    return ItemListObject(title=title, imgsrc=imgsrc, text=text, link=link, link_text=link_text)
+    try:
+        viewer = User.objects.get(username=viewer)
+    except:
+        viewer = False
+    print('Viewer = ', viewer)
+    try:
+        set = User.objects.get(username=user).viewer_set.get(viewer=viewer)
+    except:
+        if user == viewer:
+            can_view = True
+        else:
+            can_view = False
+        set = 'Nada'
+    else:
+        can_view = True
+    print('--------viewerset = ', set)
+    print('Can view? ', can_view, '\n')
+    if can_view:
+        link = '/outline/user/' + user.username + '/'
+        link_text = 'View Profile'
+    else:
+        link = '/outline/frrq/' + user.username + '/'
+        link_text = 'Friend request!'
+    return ItemListObject(title=title, imgsrc=imgsrc, text='', link=link, link_text=link_text)
 
 
 def login_view(request):
@@ -142,7 +255,8 @@ def login_view(request):
             error_message = 'There was an error with your login attempt. Please check your username and '
             error_message += 'password again. If you believe you are receiving this message in error, '
             error_message += 'please contact us.'
-            return render(request, 'outline/login_form.html', {'error_message': error_message})
+            return render(request, 'outline/login_form.html', {'error_message': error_message,
+                                                               'loginout_active': True})
     # If GET
     else:
         # If the user is already logged in, prompt the user to logout or contact admin.
@@ -155,7 +269,7 @@ def login_view(request):
             context['error_title'] = 'Already logged in:'
             return index(request, context)
         # Otherwise, render the login_form.
-        return render(request, 'outline/login_form.html')
+        return render(request, 'outline/login_form.html', {'loginout_active': True})
 
 
 def register(request):
@@ -204,7 +318,8 @@ def register(request):
         # if retry_flag = True, jump back to registration page with error_message in the context
         # else, save and login user, then redirect to a splash page.
         if retry_flag:
-            return render(request, 'outline/registration_form.html', {'error_message': error_message})
+            return render(request, 'outline/registration_form.html', {'error_message': error_message,
+                                                                      'loginout_active': True})
         else:
             # TODO: (1) Actually register the user, (2) Send to a splash page
             user = User()
@@ -212,11 +327,9 @@ def register(request):
             user.set_password(request.POST['password'])
             user.email = request.POST['email']
             user.save()
-            print('Password = ', request.POST['password'])
 
             # returns User object if credentials are valid
             user = authenticate(username=user.username, password=request.POST['password'])
-            print(user)
 
             if user is not None and user.is_active:
                 login(request, user)
@@ -225,7 +338,7 @@ def register(request):
                 # return render(request, 'outline/registration_form_02.html', {'error_message': 'Valid registration!'})
 
     else:
-        return render(request, 'outline/registration_form.html')
+        return render(request, 'outline/registration_form.html', {'loginout_active': True})
 
 
 # Used to R&D the item_list display. Just makes dummy data for display.

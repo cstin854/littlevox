@@ -2,13 +2,14 @@
 
 <!-- Passed a reference to 'title', 'subtitle', and 'content' -->
 {% block body %}
+<hr>
 <div class="container">
 
     <h1>{{ title }}</h1>
     <h4>{{ subtitle }}</h4>
     <hr>
     <div class="well">
-        {{ content }}
+        {{ content|safe }}
     </div>
     <hr>
 </div>

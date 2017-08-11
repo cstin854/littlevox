@@ -26,6 +26,15 @@ class Child(models.Model):
         item.link_text = str(self.name)+"'s Dashboard"
         return item
 
+    def url_friendly(self):
+        val = ''
+        for char in self.name:
+            if char.lower() in 'qwertyuiopasdfghjklzxcvbnm':
+                val += char.lower()
+            elif char in '0123456789':
+                val += char
+        return val
+
 
 class Word(models.Model):
     child = models.ForeignKey(Child, on_delete=models.CASCADE)
@@ -45,15 +54,33 @@ class Word(models.Model):
 # Usage (when "username" is logged in, trying to access content owned by "owner":
 #   if ';'+username+';' in Viewers.objects.filter(owner="owner").viewers
 # Something like the above. Will need to tweak in practice!
-
-
 class Viewer(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
-    viewer = models.CharField(max_length=50)
+    viewer = models.CharField(max_length=30)
+    is_blocked = models.BooleanField(default=False)
 
     def __str__(self):
-        return str(self.owner.username)+' : '+self.viewer
+        ch = ''
+        if self.is_blocked:
+            ch += ' (X)'
+        return str(self.owner.username)+' : '+self.viewer + ch
 
+    def is_valid(self):  # returns a Boolean to determine if the viewer matches with a valid user.
+        try:
+            u = User.objects.get(username=self.viewer)
+        except:
+            return False
+        else:
+            return True
+
+    def recriprocate(self):
+        if self.is_valid and self.is_blocked is False:
+            owner = User.objects.get(username=self.viewer)
+            viewer = User.objects.get(username=self.owner)
+            v = Viewer()
+            v.owner = owner
+            v.viewer = viewer.username
+            v.is_blocked = False
 
 class ItemListObject():
 
@@ -69,3 +96,17 @@ class ItemListObject():
             return False
         else:
             return True
+
+
+class Message(models.Model):
+
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE)
+    sender = models.CharField(max_length=30)
+    date = models.CharField(max_length=20)
+    message = models.TextField()
+
+    def __str__(self):
+        return self.sender + ' -> ' + self.recipient.username + ': ' + self.message[:100] + '\t(' + self.date + ')'
+
+    def is_valid(self):
+        return True

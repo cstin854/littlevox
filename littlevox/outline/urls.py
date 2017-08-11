@@ -29,4 +29,8 @@ urlpatterns = [
     url(r'^itemlist/$', views.blank_item_list, name='itemlist'),
     url(r'^childlist/$', views.all_child_list, name='allchildlist'),
     url(r'^users/', views.users, name='users'),
+    url(r'^addword/', views.addword, name='addword'),
+    url(r'^addchild/', views.addchild, name='addchild'),
+    url(r'^rm/(?P<user>[A-Za-z0-9]+)/', views.remove_viewer, name='remove_viewer'),
+    url(r'^frrq/(?P<recipient>[A-Za-z0-9]+)/', views.friend_request, name='friend_request'),
 ]

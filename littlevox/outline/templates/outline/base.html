@@ -15,72 +15,78 @@
     {% block specific_scripts %} {% endblock %}
     {% load staticfiles %}
     {% if error_message %}
-        {% include 'outline/error_modal_script.html' %}
+    {% include 'outline/error_modal_script.html' %}
     {% endif %}
 </head>
 
 <body>
 
-    {% if error_message %}
-        {% include 'outline/error_modal_body.html' %}
-    {% endif %}
+{% if error_message %}
+{% include 'outline/error_modal_body.html' %}
+{% endif %}
 
-    <nav class="navbar navbar-inverse  navbar-fixed-top">
-        <div class="container-fluid">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+<nav class="navbar navbar-inverse  navbar-fixed-top">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand" href="{% url 'outline:index' %}" style="font-family: 'Righteous', serif;
+            </button>
+            <a class="navbar-brand" href="{% url 'outline:index' %}" style="font-family: 'Righteous', serif;
                 color: #337AB7;">
-                    <strong>LittleVox</strong>
-                </a>
-            </div>
+                <strong>LittleVox</strong>
+            </a>
+        </div>
 
-            <div class="collapse navbar-collapse" id="myNavbar">
-                <ul class="nav navbar-nav">
-                    <li class="active" style="color: #FFFFFF;">
-                        <a href="
+        <div class="collapse navbar-collapse" id="myNavbar">
+            <ul class="nav navbar-nav">
+                <li class="{% if dashboard_active %}active{% endif %}">
+                    <a href="
                             {% if request.user.username %}/outline/user/{{ request.user.username }}/
                             {% else %}{% url 'outline:index' %}
-                            {% endif %}">
-                            <span class="glyphicon glyphicon-home" aria-hidden="True">&nbsp;Dashboard</span>
-                        </a>
-                    </li>
-                    <li class="">
-                        <a href="{% url 'outline:users' %}" style="color: #FFFFFF;">
-                            <span class="glyphicon glyphicon-user" aria-hidden="True"></span>
-                                <span class="glyphicon glyphicon-user" aria-hidden="True">&nbsp;Users</span>
-                        </a>
-                    </li>
-                    <li class="">
-                        <a href="#" style="color: #FFFFFF;">
-                                <span class="glyphicon glyphicon-info-sign" aria-hidden="True">&nbsp;About</span>
-                        </a>
-                    </li>
+                            {% endif %}" style="color: #FFFFFF;">
+                        <span class="glyphicon glyphicon-home" aria-hidden="True">&nbsp;Dashboard</span>
+                    </a>
+                </li>
+                <li class="{% if users_active %}active{% endif %}">
+                    <a href="{% url 'outline:users' %}" style="color: #FFFFFF;">
+                        <span class="glyphicon glyphicon-user" aria-hidden="True">&nbsp;Users</span>
+                    </a>
+                </li>
+                <li class="{% if about_active %}active{% endif %}">
+                    <a href="#" style="color: #FFFFFF;">
+                        <span class="glyphicon glyphicon-info-sign" aria-hidden="True">&nbsp;About</span>
+                    </a>
+                </li>
 
-                </ul>
+            </ul>
 
-                <ul class="nav navbar-nav navbar-right">
-                    <li><a href="#" style="color: #FFFFFF;"><span class="glyphicon glyphicon-plus"></span> Add Word</a></li>
-                    {% if request.user.username %}
-                    <li>
-                        <a href="{% url 'outline:logout' %}" style="color: #FFFFFF;"><span class="glyphicon glyphicon-log-out"></span>
-                            &nbsp;Logout ({{ request.user.username }})
-                        </a>
-                    </li>
-                    {% else %}
-                    <li><a href="{% url 'outline:login' %}" style="color: #FFFFFF;"><span class="glyphicon glyphicon-log-in"></span>&nbsp;Login</a></li>
-                    {% endif %}
-                </ul>
-            </div>
+            <ul class="nav navbar-nav navbar-right">
+                <li class="{% if addword_active %}active{% endif %}">
+                    <a href="#" style="color: #FFFFFF;"><span class="glyphicon glyphicon-plus"></span>&nbsp;Add Word</a>
+                </li>
+                {% if request.user.username %}
+                <li class="{% if loginout_active %}active{% endif %}">
+                    <a href="{% url 'outline:logout' %}" style="color: #FFFFFF;"><span
+                            class="glyphicon glyphicon-log-out"></span>
+                        &nbsp;Logout ({{ request.user.username }})
+                    </a>
+                </li>
+                {% else %}
+                <li class="{% if loginout_active %}active{% endif %}">
+                    <a href="{% url 'outline:login' %}" style="color: #FFFFFF;">
+                        <span class="glyphicon glyphicon-log-in"></span>&nbsp;Login
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
         </div>
-    </nav>
-    <br><br>
-    {% block body %}
-    {% endblock %}
+    </div>
+</nav>
+<br><br>
+{% block body %}
+{% endblock %}
 
 </body>
 </html>
