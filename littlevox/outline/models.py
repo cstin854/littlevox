@@ -101,7 +101,7 @@ class ItemListObject():
 class Message(models.Model):
 
     recipient = models.ForeignKey(User, on_delete=models.CASCADE)
-    sender = models.CharField(max_length=30)
+    sender = models.CharField(max_length=30, default='admin')
     date = models.CharField(max_length=20)
     message = models.TextField()
 
@@ -109,4 +109,40 @@ class Message(models.Model):
         return self.sender + ' -> ' + self.recipient.username + ': ' + self.message[:100] + '\t(' + self.date + ')'
 
     def is_valid(self):
-        return True
+        recip = User.objects.get(username=self.recipient)
+        sender = User.objects.get(username=self.sender)
+        pending_message = False
+        blocked = False
+
+        try:  # see if there are any messages from sender to recipient:
+            msgs = recip.message_set.filter(sender=sender.username)[0]
+        except:  # if not,
+            pass
+        else:  # if this triggers, then there is a pending request.
+            pending_message = True
+
+        try:
+            senders_viewer_object = recip.viewer_set.filter(viewer=sender.username)[0]
+        except:  # If sender does not have a viewer object associated with recipient, then recip is not blocked]
+            pass
+        else:  # Otherwise, need to check if sender is blocked by recip, or if recip has a pending msg from user.
+            if senders_viewer_object.is_blocked:
+                blocked = True
+
+        message = ''
+        if not blocked and not pending_message:
+            return [True, 'Your message has been sent.']
+        else:
+            if blocked:
+                message += 'You have been blocked by this user. Your message will not be processed. '
+            if blocked and pending_message:
+                message += '<br>'
+            if pending_message:
+                message += 'You have a pending friend request to this user. Your message will not be processed. '
+            return [False, message]
+
+    def is_actionable(self):
+        if self.sender == 'admin' or self.recipient.username == 'admin':
+            return False
+        else:
+            return True

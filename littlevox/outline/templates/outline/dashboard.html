@@ -10,21 +10,30 @@
         <li class="active"><a data-toggle="tab" href="#home">Friends</a></li>
         <li><a data-toggle="tab" href="#menu1">Ch</a></li>
         <li><a data-toggle="tab" href="#menu2">Wd</a></li>
-        <li><a data-toggle="tab" href="#menu3">Msgs</a></li>
+        <li>
+            <a data-toggle="tab" href="#messages">
+                Messages&nbsp;
+                <span class="badge">
+                    {% if number_of_messages %}
+                    {{ number_of_messages }}
+                    {% endif %}
+                </span>
+            </a>
+        </li>
     </ul>
 
     <div class="tab-content">
         <div id="home" class="tab-pane fade in active">
             <h3>Permissions</h3>
             <hr>
-            {% include 'outline/permissions_list.html' %}
+            {% include 'outline/snippets/permissions_list.html' %}
         </div>
 
 
         <div id="menu1" class="tab-pane fade">
             <h3>Ch</h3>
             <hr>
-            {% include 'outline/child_list.html' %}<hr>
+            {% include 'outline/snippets/child_list.html' %}<hr>
         </div>
 
 
@@ -35,9 +44,8 @@
         </div>
 
 
-        <div id="menu3" class="tab-pane fade">
-            <h3>Menu 3</h3>
-            <p>Eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</p>
+        <div id="messages" class="tab-pane fade">
+            {% include 'outline/snippets/messages.html' %}<hr>
         </div>
 
 

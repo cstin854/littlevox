@@ -1,0 +1,51 @@
+<h3>Your messages</h3>
+
+{% if messages %}
+{% for message in messages %}
+<div class="container-fluid">
+    <div class="col-sm-6">
+        <h4>From: {{message.sender}}<br></h4>
+        <h6>Message: {{message.message}}</h6>
+    </div>
+    <div class="col-sm-6">
+        <form action="/outline/user/{{ request.user.username }}/" method="post">
+            {% csrf_token %}
+            <div class="form-row">
+                {% if message.is_actionable %}
+                <label class="mr-sm-2" for="message_option">
+                    What would you like to do with this request?
+                </label><br>
+                {% else %}
+                <label class="mr-sm-2" for="message_option">
+                    Press delete to dismiss this message from your message panel.
+                </label><br>
+                {% endif %}
+                {% if message.is_actionable %}
+                <select class="custom-select mb-2 mr-sm-2 mb-sm-0" id="message_option" name="message_option">
+                    <option selected value="accept">Accept request</option>
+                    <option value="deny">Deny and delete</option>
+                    <option value="blockuser">Block user</option>
+                </select>
+                {% else %}
+                <input type="hidden" name="message_option" id="message_option" value="dismiss">
+                {% endif %}
+
+                <input type="hidden" name="message_id" value="{{ message.id }}">
+
+                <button type="submit" class="btn-sm btn-primary">
+                    {% if message.is_actionable %}
+                    Submit
+                    {% else %}
+                    Dismiss
+                    {% endif %}
+                </button>
+
+            </div>
+        </form>
+    </div>
+</div>
+<hr>
+{% endfor %}
+{% else %}
+No messages.
+{% endif %}

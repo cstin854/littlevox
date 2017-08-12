@@ -98,44 +98,76 @@ def user_junk(request, user):
 
     context = dict()
 
-    if 'error_message' in request.session:
-        context['error_message'] = request.session['error_message']
-        del request.session['error_message']
-        request.session.modified = True
+    # If the page requested via POST
+    if request.POST:
+        request.session['error_title'] = "Processing test."
+        msg = ''
+        for key, val in request.POST.items():
+            msg += "Key = " + key + "<br>"
+            msg += "------Val = " + val + "<hr>"
+        request.session['error_message'] = msg
+        return redirect('outline:user_junk', user=request.user.username)
 
-    if 'error_title' in request.session:
-        context['error_title'] = request.session['error_title']
-        del request.session['error_title']
-        request.session.modified = True
-
-    try:
-        user = User.objects.get(username=user)
-    except:
-        request.session['error_message'] = "That user does not exist."
-        return redirect('outline:users')
-
-    context['dashboard_active'] = True
-    context['user'] = user.username
-    try:
-        context['viewer_list'] = list(user.viewer_set.all())
-    except:
-        context['viewer_list'] = False
-
-    try:
-        context['child_list'] = list(user.child_set.all())
-    except:
-        context['child_list'] = False
-
-    if request.user.username == user.username:
-        # Do something when this is the user's dashboard
-        context['dashboard_header'] = "Welcome! This is your dashboard."
-        context['is_owner'] = True
+    # If the page requested via GET
     else:
-        # Do something if this is not the user's dashboard.
-        context['dashboard_header'] = "Welcome! You are viewing " + user.username + "'s dashboard."
-        context['is_ownder'] = False
 
-    return render(request, 'outline/dashboard.html', context)
+        try:
+            user = User.objects.get(username=user)
+        except:
+            request.session['error_message'] = "That user does not exist."
+            return redirect('outline:users')
+
+        if 'error_message' in request.session:
+            context['error_message'] = request.session['error_message']
+            del request.session['error_message']
+            request.session.modified = True
+
+        if 'error_title' in request.session:
+            context['error_title'] = request.session['error_title']
+            del request.session['error_title']
+            request.session.modified = True
+
+        context['dashboard_active'] = True
+        context['user'] = user.username
+
+        # If this is user's own dashboard.
+        if request.user.username == user.username:
+
+            try:
+                context['viewer_list'] = list(user.viewer_set.all())
+            except:
+                context['viewer_list'] = False
+
+            try:
+                context['child_list'] = list(user.child_set.all())
+            except:
+                context['child_list'] = False
+
+            try:
+                context['messages'] = list(user.message_set.all())
+                context['number_of_messages'] = len(context['messages'])
+            except:
+                context['messages'] = False
+                context['number_of_messages'] = False
+
+            context['dashboard_header'] = "Welcome! This is your dashboard."
+            context['is_owner'] = True
+
+            return render(request, 'outline/dashboard.html', context)
+
+        # If this is not the user's dashboard.
+        else:
+
+            try:
+                context['child_list'] = list(user.child_set.all())
+            except:
+                context['child_list'] = False
+
+            context['dashboard_header'] = "Welcome! You are viewing " + user.username + "'s dashboard."
+            context['is_owner'] = False
+
+            # Eventually, this should be its own template, dashboard_visitor.html
+            return render(request, 'outline/dashboard.html', context)
 
 
 def friend_request(request, recipient):
@@ -147,13 +179,13 @@ def friend_request(request, recipient):
         message.recipient = User.objects.get(username=request.POST['recipient'])
         message.sender = request.POST['sender']
         message.message = request.POST['message']
-        if message.is_valid():
+        is_valid = message.is_valid()
+        if is_valid[0]:
             message.save()
             request.session['error_title'] = "Thank you!"
-            request.session['error_message'] = "Your message has been sent."
         else:
-            request.session['error_title'] = "Thank you!"
-            request.session['error_message'] = "Your message has been processed."
+            request.session['error_title'] = "Message not processed."
+        request.session['error_message'] = is_valid[1]
         return redirect('outline:user_junk', user=request.user.username)
     else:
         context['recipient'] = recipient
@@ -177,7 +209,6 @@ def users(request):
 
     # If landing on the page with GET method
     if not request.POST:
-        # TODO: Change this next line when Users have an attribute for 'searchable'
         folks = sample(list(User.objects.all()), 12)  # Getting a sample of User objects
         user_items = []  # Initializing an empty list to all ItemListObject representations of Users.
         for folk in folks:
@@ -220,8 +251,8 @@ def user_to_itemlist_item(user, viewer=False):
         set = 'Nada'
     else:
         can_view = True
-    print('--------viewerset = ', set)
-    print('Can view? ', can_view, '\n')
+    #print('--------viewerset = ', set)
+    #print('Can view? ', can_view, '\n')
     if can_view:
         link = '/outline/user/' + user.username + '/'
         link_text = 'View Profile'
