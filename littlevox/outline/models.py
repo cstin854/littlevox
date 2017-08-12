@@ -73,14 +73,6 @@ class Viewer(models.Model):
         else:
             return True
 
-    def recriprocate(self):
-        if self.is_valid and self.is_blocked is False:
-            owner = User.objects.get(username=self.viewer)
-            viewer = User.objects.get(username=self.owner)
-            v = Viewer()
-            v.owner = owner
-            v.viewer = viewer.username
-            v.is_blocked = False
 
 class ItemListObject():
 
@@ -146,3 +138,15 @@ class Message(models.Model):
             return False
         else:
             return True
+
+
+def initiate_friendship(user1, user2):
+    pass
+
+
+def initiate_block(blocker, blockee):
+    pass
+
+
+def disintegrate_friendship(user1, user2):
+    pass

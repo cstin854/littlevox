@@ -31,7 +31,7 @@
                 {% endif %}
 
                 <input type="hidden" name="message_id" value="{{ message.id }}">
-
+                <input type="hidden" name="post_type" value="manage_message">
                 <button type="submit" class="btn-sm btn-primary">
                     {% if message.is_actionable %}
                     Submit

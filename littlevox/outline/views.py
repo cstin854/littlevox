@@ -20,7 +20,6 @@ from .helper_functions import easy_today
 
 # TODO: Clearly this needs to be cleaned up!
 def index(request, context={}):
-
     if request.user.username:
         return redirect('outline:user_junk', user=request.user.username)
     else:
@@ -37,6 +36,7 @@ def addword(request):
 
 def addchild(request):
     return addword(request)
+
 
 # TODO: This is just a temp view to show all word objects.
 def word_test(request):
@@ -61,12 +61,12 @@ def logout_view(request):
 
 
 def remove_viewer(request, user):
-
     if request.POST:  # if POSt data received
         if 'revoke' in request.POST:  # if the requester confirmed removing "viewer" from auth'd viewers:
             requester = User.objects.get(username=request.user.username)
             viewer = requester.viewer_set.get(viewer=request.POST['viewer'])
             viewer.delete()
+
         # either way, redirect to user dashboard view
         return redirect('outline:user_junk', user=request.user.username)
 
@@ -91,11 +91,11 @@ def remove_viewer(request, user):
         else:
             return redirect('outline:index')
 
+
 # TODO: get_object_or_404 with user
 # this view is just used for testing permissions stuff.
 # Can eventually be deleted.
 def user_junk(request, user):
-
     context = dict()
 
     # If the page requested via POST
@@ -197,7 +197,6 @@ def friend_request(request, recipient):
 
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def users(request):
-
     DEFAULT_SEARCH_RESULTS = 15
     context = dict()
     context['users_active'] = True
@@ -209,6 +208,7 @@ def users(request):
 
     # If landing on the page with GET method
     if not request.POST:
+
         folks = sample(list(User.objects.all()), 12)  # Getting a sample of User objects
         user_items = []  # Initializing an empty list to all ItemListObject representations of Users.
         for folk in folks:
@@ -251,8 +251,8 @@ def user_to_itemlist_item(user, viewer=False):
         set = 'Nada'
     else:
         can_view = True
-    #print('--------viewerset = ', set)
-    #print('Can view? ', can_view, '\n')
+    # print('--------viewerset = ', set)
+    # print('Can view? ', can_view, '\n')
     if can_view:
         link = '/outline/user/' + user.username + '/'
         link_text = 'View Profile'
@@ -266,7 +266,7 @@ def login_view(request):
     # If POST
     if request.POST:
 
-        #Gets username and password from POST data.
+        # Gets username and password from POST data.
         username = request.POST['username']
         password = request.POST['password']
         # Authenticate the user
@@ -280,7 +280,8 @@ def login_view(request):
                 print('Do something! Used requested to be remembered.')
             # Logs the user in.
             login(request, user)
-            return index(request, {'error_title': 'Welcome '+username+'!', 'error_message': 'You have been logged in.'})
+            return index(request,
+                         {'error_title': 'Welcome ' + username + '!', 'error_message': 'You have been logged in.'})
         # Otherwise, redirect back to the login screen with an error message.
         else:
             error_message = 'There was an error with your login attempt. Please check your username and '
