@@ -14,6 +14,7 @@ from .simple_search import get_matches
 from random import sample
 from django.views.decorators.cache import cache_control
 from .helper_functions import easy_today
+from .models import initiate_block, initiate_friendship, check_relationship, remove_block, disintegrate_friendship
 
 
 # Create your views here.
@@ -63,9 +64,7 @@ def logout_view(request):
 def remove_viewer(request, user):
     if request.POST:  # if POSt data received
         if 'revoke' in request.POST:  # if the requester confirmed removing "viewer" from auth'd viewers:
-            requester = User.objects.get(username=request.user.username)
-            viewer = requester.viewer_set.get(viewer=request.POST['viewer'])
-            viewer.delete()
+            disintegrate_friendship(request.user.username, request.POST['viewer'])
 
         # either way, redirect to user dashboard view
         return redirect('outline:user_junk', user=request.user.username)
@@ -179,6 +178,7 @@ def friend_request(request, recipient):
         message.recipient = User.objects.get(username=request.POST['recipient'])
         message.sender = request.POST['sender']
         message.message = request.POST['message']
+        message.type = 'friend request'
         is_valid = message.is_valid()
         if is_valid[0]:
             message.save()

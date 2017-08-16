@@ -71,7 +71,22 @@ class Viewer(models.Model):
         except:
             return False
         else:
+            try:
+                v = self.owner.viewer_set.all()
+            except:
+                pass
+            else:
+                for dude in v:
+                    if dude.viewer == self.viewer:
+                        return False
+        return True
+
+    def custom_save(self):
+        if self.is_valid():
+            self.save()
             return True
+        else:
+            return False
 
 
 class ItemListObject():
@@ -96,6 +111,7 @@ class Message(models.Model):
     sender = models.CharField(max_length=30, default='admin')
     date = models.CharField(max_length=20)
     message = models.TextField()
+    type = models.CharField(max_length=20, default=None)
 
     def __str__(self):
         return self.sender + ' -> ' + self.recipient.username + ': ' + self.message[:100] + '\t(' + self.date + ')'
@@ -141,12 +157,147 @@ class Message(models.Model):
 
 
 def initiate_friendship(user1, user2):
-    pass
+
+    rel = check_relationship(user1, user2)
+
+    if rel['error'] == True or rel['friendship'] == True or rel['block'] == True:
+        return False
+
+    v1 = Viewer()
+    v1.owner = User.objects.get(username=user1)
+    v1.viewer = user2
+    v1.is_blocked = False
+    if v1.custom_save() == True:
+        v2 = Viewer()
+        v2.owner = User.objects.get(username=user2)
+        v2.viewer = user1
+        v2.is_blocked = False
+        if v2.custom_save() == True:
+            return True
+    return False
 
 
 def initiate_block(blocker, blockee):
-    pass
+
+    rel = check_relationship(blocker, blockee)
+
+    if rel['error'] == True:
+        return False
+    if rel['block'] == True:
+        return False  # logic: If one user already blocks the other, that's enough to stop comms from going through.
+
+    disintegrate_friendship(blocker, blockee)
+
+    v = Viewer()
+    v.owner = User.objects.get(username=blocker)
+    v.viewer = blockee
+    v.is_blocked = True
+    if v.custom_save() == True:  # use custom_save to prevent duplicate viewer objects
+        return True
+    else:
+        return False
 
 
 def disintegrate_friendship(user1, user2):
-    pass
+
+    rel = check_relationship(user1, user2)
+
+    if rel['error'] == True:
+        return False
+
+    user1 = User.objects.get(username=user1)
+    user2 = User.objects.get(username=user2)
+
+    try:
+        v1 = user1.viewer_set.filter(viewer=user2.username)
+        #print(v1)
+    except:
+        pass
+    else:
+        for v in v1:
+            if v.is_blocked:
+                pass
+            else:
+                v.delete()
+
+    try:
+        v2 = user2.viewer_set.filter(viewer=user1.username)
+        #print(v2)
+    except:
+        pass
+    else:
+        for v in v2:
+            if v.is_blocked:
+                pass
+            else:
+                v.delete()
+
+
+def check_relationship(user1, user2):
+    d = dict()
+    d['error'] = False
+    d['friendship'] = False
+    d['block'] = False
+
+    two_way = 0
+
+    try:
+        user1 = User.objects.get(username=user1)
+        user2 = User.objects.get(username=user2)
+    except:
+        d['error'] = True
+        d['error_message'] = 'Invalid user(s).'
+        return d
+
+    d['block_details'] = ''
+
+    try:
+        v1 = user1.viewer_set.get(viewer=user2.username)
+    except:
+        pass
+    else:
+        if v1.is_blocked:
+            d['block'] = True
+            d['block_details'] += user1.username + ' blocks ' + user2.username + ' . '
+        else:
+            two_way += 1
+
+    try:
+        v2 = user2.viewer_set.get(viewer=user1.username)
+    except:
+        pass
+    else:
+        if v2.is_blocked:
+            d['block'] = True
+            d['block_details'] += user2.username + ' blocks ' + user1.username + '. '
+        else:
+            two_way += 1
+
+    if d['block'] == True:
+        d['friendship'] = False
+
+    if d['block_details'] == '':
+        del d['block_details']
+
+    if two_way == 2:
+        d['friendship'] = True
+
+    d['error_message'] = False
+    return d
+
+
+def remove_block(blocker, blockee):
+    rel = check_relationship(blocker, blockee)
+    if rel['error'] == True:
+        return False
+
+    if rel['block'] == False:
+        return False
+
+    else:
+        blocker = User.objects.get(username=blocker)
+        v = blocker.viewer_set.filter(viewer=blockee)
+        print(v)
+        for relation in v:
+            relation.delete()
+        print(v)
