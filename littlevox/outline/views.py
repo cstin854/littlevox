@@ -22,7 +22,7 @@ from .models import initiate_block, initiate_friendship, check_relationship, rem
 # TODO: Clearly this needs to be cleaned up!
 def index(request, context={}):
     if request.user.username:
-        return redirect('outline:user_junk', user=request.user.username)
+        return redirect('outline:user_splashpage', user=request.user.username)
     else:
         context['title'] = 'Why u here?'
         context['subtitle'] = 'Here be dragons.'
@@ -94,7 +94,7 @@ def remove_viewer(request, user):
 # TODO: get_object_or_404 with user
 # this view is just used for testing permissions stuff.
 # Can eventually be deleted.
-def user_junk(request, user):
+def user_splashpage(request, user):
     context = dict()
 
     # If the page requested via POST
