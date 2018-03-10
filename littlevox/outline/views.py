@@ -64,7 +64,7 @@ def remove_viewer(request, user):
             disintegrate_friendship(request.user.username, request.POST['viewer'])
 
         # either way, redirect to user dashboard view
-        return redirect('outline:user_junk', user=request.user.username)
+        return redirect('outline:user_splashpage', user=request.user.username)
 
     else:  # if no POST data...
 
@@ -76,7 +76,7 @@ def remove_viewer(request, user):
             except:
                 request.session['error_message'] = "Privileges cannot be revoked because that user does not have" \
                                                    " permissions to view your profile."
-                return redirect('outline:user_junk', user=requester)
+                return redirect('outline:user_splahspage', user=requester)
 
             context['viewer'] = viewer
             context['requester'] = requester
@@ -102,7 +102,7 @@ def user_splashpage(request, user):
             msg += "Key = " + key + "<br>"
             msg += "------Val = " + val + "<hr>"
         request.session['error_message'] = msg
-        return redirect('outline:user_junk', user=request.user.username)
+        return redirect('outline:user_splashpage', user=request.user.username)
 
     # If the page requested via GET
     else:
@@ -183,7 +183,7 @@ def friend_request(request, recipient):
         else:
             request.session['error_title'] = "Message not processed."
         request.session['error_message'] = is_valid[1]
-        return redirect('outline:user_junk', user=request.user.username)
+        return redirect('outline:user_splashpage', user=request.user.username)
     else:
         context['recipient'] = recipient
         context['user_active'] = True

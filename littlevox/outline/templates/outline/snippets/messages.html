@@ -8,6 +8,7 @@
         <h6>Message: {{message.message}}</h6>
     </div>
     <div class="col-sm-6">
+        <!--TODO: This button doesn't actually process, just shows a processing modal -->
         <form action="/outline/user/{{ request.user.username }}/" method="post">
             {% csrf_token %}
             <div class="form-row">
