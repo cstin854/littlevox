@@ -16,9 +16,6 @@ from django.views.decorators.cache import cache_control
 from .helper_functions import easy_today
 from .models import initiate_block, initiate_friendship, check_relationship, remove_block, disintegrate_friendship
 
-
-# Create your views here.
-
 # TODO: Clearly this needs to be cleaned up!
 def index(request, context={}):
     if request.user.username:
@@ -248,7 +245,6 @@ def user_to_itemlist_item(user, viewer=False):
             can_view = True
         else:
             can_view = False
-        set = 'Nada'
     else:
         can_view = True
     # print('--------viewerset = ', set)
@@ -433,7 +429,7 @@ def itemlist(request, context={}):
 
     return render(request, 'outline/list_template.html', context)
 
-
+#TODO: This is a temporary view for development only.
 def all_child_list(request):
     children = sample(list(Child.objects.all()), min(20, len(Child.objects.all())))
     child_items = []
@@ -452,7 +448,6 @@ def itemlist_gridder(itemlist, num_per_row=3):
     k = len(itemlist)
     # print('len = ',k)
     # print('num per row = ',num_per_row)
-    new_list = []
     num_rows = ceiling(k / num_per_row)
     # print('num rows = ',num_rows)
     blanks = num_rows * num_per_row - k
