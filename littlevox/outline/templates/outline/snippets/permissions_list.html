@@ -4,7 +4,9 @@
     <p>Authorized viewers of your profile:</p>
     <ul class="list-group">
         {% for viewer in viewer_list %}
-        <li class="list-group-item">
+        {% if viewer.is_blocked %}
+        {% else %}
+            <li class="list-group-item">
             <h2>{{ viewer.viewer }}</h2>
             <br>
             <span class="glyphicon glyphicon-eye-open"></span>&nbsp;
@@ -12,17 +14,22 @@
             <br>
             <span class="glyphicon glyphicon-eye-close"></span>&nbsp;
             <a href="/outline/rm/{{ viewer.viewer }}/">Remove viewing privileges.</a>
-        </li>
+            </li>
+        {% endif %}
         {% endfor %}
     </ul>
     {% else %}
-    <h4>
-        This profile is set to public.
-    </h4>
+    {% endif %}
+
+    {% if viewer_list %}
+        <li class="list-group-item">
+            <span class="glyphicon glyphicon-eye-close"></span>&nbsp;
+            <a href="/outline/blocked_users/">Click here to view blocked users.</a>
+        </li>
     {% endif %}
     <hr>
     <span class="glyphicon glyphicon-plus"></span>
-    <a href="{% url 'outline:users' %}">Click here to search for and add viewers.</a>
+    <a href="{% url 'outline:users' %}">Click here to search for and add a friend by username.</a>
 
 {% else %}
 
