@@ -255,6 +255,7 @@ def disintegrate_friendship(user1, user2):
                 pass
             else:
                 v.delete()
+    return True
 
 
 def check_relationship(user1, user2):
@@ -321,7 +322,7 @@ def remove_block(blocker, blockee):
     else:
         blocker = User.objects.get(username=blocker)
         v = blocker.viewer_set.filter(viewer=blockee)
-        print(v)
+        #print(v)
         for relation in v:
             relation.delete()
-        print(v)
+        #print(v)

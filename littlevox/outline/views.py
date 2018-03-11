@@ -224,7 +224,10 @@ def users(request):
         folks = sample(all_users, sample_size)  # Getting a sample of User objects
         user_items = []  # Initializing an empty list to all ItemListObject representations of Users.
         for folk in folks:
-            user_items.append(user_to_itemlist_item(folk, viewer=request.user.username))
+            #Checks to see if there is a block between the requesting user and the
+            #user in the returned set. If not, then make an itemlist view to display
+            if not check_relationship(User.objects.get(username=request.user.username), folk)['block']:
+                user_items.append(user_to_itemlist_item(folk, viewer=request.user.username))
         context['num_per_row'] = 4
         context['title'] = 'All users'
         context['intro_text'] = 'List of all users.'
@@ -236,11 +239,13 @@ def users(request):
         context['number_per_row'] = 3
         context['title'] = 'Search results (' + request.POST['query'] + ')'
         matches = get_matches(request.POST['query'], User.objects.all(), DEFAULT_SEARCH_RESULTS)
-        context['content'] = 'Stubby stub.'
         context['search_bar'] = True
         context['list_of_items'] = []
         for match in matches:
-            context['list_of_items'].append(user_to_itemlist_item(match, viewer=request.user.username))
+            #Checks to see if there is a block between the requesting user and the
+            #user in the returned set. If not, then make an itemlist view to display
+            if not check_relationship(User.objects.get(username=request.user.username), match)['block']:
+                context['list_of_items'].append(user_to_itemlist_item(match, viewer=request.user.username))
 
         return itemlist(request, context)
 
