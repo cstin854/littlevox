@@ -5,7 +5,6 @@ from django.contrib.auth.models import User
 from django.views.generic import View
 from django.views.decorators.cache import patch_cache_control
 from functools import wraps
-from .forms import UserForm, UserLogin
 from django.urls import reverse
 from django.shortcuts import redirect
 from django.contrib.auth import authenticate, login, logout
@@ -14,13 +13,13 @@ from .simple_search import get_matches
 from random import sample
 from django.views.decorators.cache import cache_control
 from .helper_functions import easy_today
-from .models import initiate_block, initiate_friendship, check_relationship, remove_block, disintegrate_friendship
+from .models import *
 
 def index(request, context={}):
     if request.user.username:
         return redirect('outline:user_splashpage', user=request.user.username)
     else:
-        return render(request, 'outline:login')
+        return redirect('outline:login_view')
 
 
 def addword(request):
