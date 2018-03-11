@@ -218,8 +218,10 @@ def users(request):
 
     # If landing on the page with GET method
     if not request.POST:
-
-        folks = sample(list(User.objects.all()), 12)  # Getting a sample of User objects
+        all_users = list(User.objects.all())
+        number_of_users = len(all_users)
+        sample_size = min(12, number_of_users)
+        folks = sample(all_users, sample_size)  # Getting a sample of User objects
         user_items = []  # Initializing an empty list to all ItemListObject representations of Users.
         for folk in folks:
             user_items.append(user_to_itemlist_item(folk, viewer=request.user.username))
