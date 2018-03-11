@@ -16,16 +16,11 @@ from django.views.decorators.cache import cache_control
 from .helper_functions import easy_today
 from .models import initiate_block, initiate_friendship, check_relationship, remove_block, disintegrate_friendship
 
-# TODO: Clearly this needs to be cleaned up!
 def index(request, context={}):
     if request.user.username:
         return redirect('outline:user_splashpage', user=request.user.username)
     else:
-        context['title'] = 'Why u here?'
-        context['subtitle'] = 'Here be dragons.'
-        context['content'] = 'Yo whaddup son?'
-        context['dashboard_active'] = True
-        return render(request, 'outline/simple_output.html', context)
+        return render(request, 'outline:login')
 
 
 def addword(request):
@@ -33,7 +28,7 @@ def addword(request):
 
 
 def addchild(request):
-    return addword(request)
+    return index(request, context={'error_message': 'This view is not hooked up yet.'})
 
 
 # TODO: This is just a temp view to show all word objects.
@@ -93,6 +88,13 @@ def remove_viewer(request, user):
 # Can eventually be deleted.
 def user_splashpage(request, user):
     context = dict()
+
+    if 'error_message' in request.session:
+        context['error_message'] = request.session['error_message']
+        context['error_title'] = request.session['error_title']
+        del request.session['error_message']
+        del request.session['error_title']
+        request.session.modified = True
 
     # If the page requested via POST
     if request.POST:
@@ -190,6 +192,17 @@ def friend_request(request, recipient):
         context['date'] = easy_today()
         context['sender'] = request.user.username
         return render(request, 'outline/frrq.html', context)
+
+
+def process_message(request):
+
+    request.session['error_title'] = 'You have attempted to process a message.'
+    request.session['error_message'] = request.POST
+
+    if request.POST:
+        return redirect('outline:user_splashpage', user=request.user.username)
+    else:
+        return redirect('outline:user_splashpage', user=request.user.username)
 
 
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)

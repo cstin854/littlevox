@@ -35,6 +35,18 @@ class Child(models.Model):
                 val += char
         return val
 
+    def custom_save(self):
+        other_children = Child.objects.filter(parent_guardian = self.parent_guardian)
+
+        # Checks to see if the parent-guardian has another child by the same
+        # "friendly" (alphanumeric) name.
+        for child in other_children:
+            if self.url_friendly() == child.url_friendly():
+                return False
+
+        self.save()
+        return True
+
 
 class Word(models.Model):
     child = models.ForeignKey(Child, on_delete=models.CASCADE)
@@ -47,6 +59,18 @@ class Word(models.Model):
 
     def set_etymology(self):
         self.etymology = etymology.get_etymology(self.word)
+
+    def custom_save(self):
+        self.word = self.word.lower().strip()
+        current_vocab = Word.objects.filter(child = self.child)
+        self.set_etymology()
+
+        for w in current_vocab:
+            if w.word == self.word:
+                return False
+
+        self.save()
+        return True
 
 
 # Probably not the best way to do this, but this class provides a way for a user
