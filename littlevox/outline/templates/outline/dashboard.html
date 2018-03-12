@@ -7,9 +7,8 @@
     <p>{{ dashboard_header }}</p>
 
     <ul class="nav nav-tabs">
-        <li class="active"><a data-toggle="tab" href="#home">Friends</a></li>
-        <li><a data-toggle="tab" href="#menu1">Children</a></li>
-        <li><a data-toggle="tab" href="#menu2">Words</a></li>
+        <li class="active"><a data-toggle="tab" href="#menu1">Children</a></li>
+        <li><a data-toggle="tab" href="#home">Friends</a></li>
         <li>
             <a data-toggle="tab" href="#messages">
                 Requests&nbsp;
@@ -23,25 +22,18 @@
     </ul>
 
     <div class="tab-content">
-        <div id="home" class="tab-pane fade in active">
+        <div id="home" class="tab-pane fade">
             <h3>Permissions</h3>
             <hr>
             {% include 'outline/snippets/permissions_list.html' %}
         </div>
 
 
-        <div id="menu1" class="tab-pane fade">
+        <div id="menu1" class="tab-pane fade in active">
             <h3>Children</h3>
             <hr>
             {% include 'outline/snippets/child_list.html' %}<hr>
         </div>
-
-
-        <div id="menu2" class="tab-pane fade">
-            <h3>Words</h3>
-            <p>Should include a word snapshot here?</p>
-        </div>
-
 
         <div id="messages" class="tab-pane fade">
             {% include 'outline/snippets/messages.html' %}<hr>

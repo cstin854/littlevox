@@ -192,6 +192,17 @@ def friend_request(request, recipient):
         return render(request, 'outline/frrq.html', context)
 
 
+def child_dashboard(request, childname):
+    context = dict()
+    try:
+        context['child'] = request.user.child_set.get(name=childname)
+    except:
+        request.session['error_title'] = 'Child not found.'
+        request.session['error_message'] = 'No child by the name ' + childname + ' found in the list of children you have registered.'
+        return redirect('outline:user_splashpage', user=request.user.username)
+    return render(request, 'outline/child_dashboard.html', context)
+
+
 def process_message(request):
     if request.POST:
         if request.POST['message_option'] == 'accept':
