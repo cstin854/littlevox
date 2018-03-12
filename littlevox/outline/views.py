@@ -192,11 +192,6 @@ def friend_request(request, recipient):
 
 def process_message(request):
     if request.POST:
-        request.session['error_title'] = 'You have attempted to process a message.'
-        msg = Message.objects.get(id=request.POST['message_id'])
-        recipient = msg.recipient
-        sender = msg.sender
-        request.session['error_message'] = str(msg)
         if request.POST['message_option'] == 'accept':
             initiate_friendship(recipient, sender)
             msg.delete()
