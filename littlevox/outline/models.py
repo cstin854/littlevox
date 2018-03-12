@@ -64,12 +64,12 @@ class Word(models.Model):
     def custom_save(self):
         self.word = self.word.lower().strip()
         current_vocab = Word.objects.filter(child = self.child)
-        self.set_etymology()
 
         for w in current_vocab:
             if w.word == self.word:
                 return False
 
+        self.set_etymology()
         self.save()
         return True
 

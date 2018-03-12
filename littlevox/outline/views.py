@@ -15,6 +15,7 @@ from django.views.decorators.cache import cache_control
 from .helper_functions import easy_today
 from .models import *
 import time
+from dateutil import parser  #Used to convert string time to datetime object
 
 def index(request, context={}):
     if request.user.username:
@@ -166,6 +167,7 @@ def user_splashpage(request, user):
 
 def friend_request(request, recipient):
     context = dict()
+    context['users_active'] = True
 
     if request.POST:
         message = Message()
@@ -227,10 +229,21 @@ def unblock(request, user_to_unblock):
 
 def addword(request):
     context = dict()
+    context['addword_active'] = True
 
     if request.POST:
         context['error_title'] = 'Form data'
-        context['error_message'] = request.POST['word'] + request.POST['child'] + request.POST['date'] + request.POST['notes']
+        user = request.user
+        child = user.child_set.get(name = request.POST['child'])
+        date = parser.parse(request.POST['date'])
+        notes = request.POST['notes']
+        word = Word()
+        word.child = child
+        word.date = date
+        word.word = request.POST['word']
+        word.notes = notes
+        worked = word.custom_save()
+        context['error_message'] = str(worked) + ' ' + user.username + ' ' + child.name + ' ' + str(date) + ' ' + notes
 
     context['children'] = request.user.child_set.all()
     context['today'] = time.strftime("%m/%d/%Y")
