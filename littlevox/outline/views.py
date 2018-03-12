@@ -14,16 +14,13 @@ from random import sample
 from django.views.decorators.cache import cache_control
 from .helper_functions import easy_today
 from .models import *
+import time
 
 def index(request, context={}):
     if request.user.username:
         return redirect('outline:user_splashpage', user=request.user.username)
     else:
         return redirect('outline:login_view')
-
-
-def addword(request):
-    return index(request, context={'error_message': 'This view is not hooked up yet.'})
 
 
 def addchild(request):
@@ -231,6 +228,18 @@ def unblock(request, user_to_unblock):
         request.session['error_title'] = 'Action unsuccessful.'
         request.session['error_message'] = 'Your last action was unsuccessful. If you believe you are receiving this message in error, please contact us.'
     return redirect('outline:user_splashpage', user=request.user.username)
+
+
+def addword(request):
+    context = dict()
+
+    if request.POST:
+        context['error_title'] = 'Form data'
+        context['error_message'] = request.POST['word'] + request.POST['child'] + request.POST['date'] + request.POST['notes']
+
+    context['children'] = request.user.child_set.all()
+    context['today'] = time.strftime("%m/%d/%Y")
+    return render(request, 'outline/add_word.html', context)
 
 
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
