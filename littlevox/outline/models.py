@@ -53,6 +53,7 @@ class Word(models.Model):
     word = models.CharField(max_length=50)
     date = models.DateField(default=datetime.date.today)
     etymology = models.TextField(default='', blank=True, null=True)
+    note = models.CharField(max_length=500, blank=True, default="")
 
     def __str__(self):
         return str(self.child) + ". Word = " + self.word
@@ -139,7 +140,6 @@ class Message(models.Model):
     sender = models.CharField(max_length=30, default='admin')
     date = models.CharField(max_length=20)
     message = models.TextField()
-    type = models.CharField(max_length=20, default=None)
 
     def __str__(self):
         return self.sender + ' -> ' + self.recipient.username + ': ' + self.message[:100] + '\t(' + self.date + ')'
