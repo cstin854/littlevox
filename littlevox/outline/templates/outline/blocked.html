@@ -1,0 +1,23 @@
+{% extends 'outline/base.html' %}
+
+{% block title %}
+Blocked users
+{% endblock %}
+
+{% block body %}
+<br>
+<div class="container-fluid">
+    <h1>Blocked user list</h1>
+    {% if blocked_users %}
+        <div class="list-group">
+        {% for block in blocked_users %}
+        <a href="/outline/unblock/{{block.viewer}}/" class="list-group-item">
+            <h4>{{ block.viewer }}</h4>
+        </a>
+        {% endfor %}
+        </div>
+    {% else %}
+        No users blocked.
+    {% endif %}
+</div>
+{% endblock %}

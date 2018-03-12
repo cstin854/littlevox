@@ -33,5 +33,7 @@ urlpatterns = [
     url(r'^addword/', views.addword, name='addword'),
     url(r'^addchild/', views.addchild, name='addchild'),
     url(r'^rm/(?P<user>[A-Za-z0-9]+)/', views.remove_viewer, name='remove_viewer'),
+    url(r'^blocked_users/', views.blocked_users, name='blocked_users'),
+    url(r'^unblock/(?P<user_to_unblock>[A-Za-z0-9]+)/', views.unblock, name='unblock'),
     url(r'^frrq/(?P<recipient>[A-Za-z0-9]+)/', views.friend_request, name='friend_request'),
 ]

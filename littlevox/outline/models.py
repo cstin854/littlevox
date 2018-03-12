@@ -72,6 +72,10 @@ class Word(models.Model):
         self.save()
         return True
 
+    #TODO: Make this work!
+    def age_at_acquisition(self):
+        pass
+
 
 # Probably not the best way to do this, but this class provides a way for a user
 # to determine the users that will be able to view her content. Default is ';public;'
@@ -322,7 +326,6 @@ def remove_block(blocker, blockee):
     else:
         blocker = User.objects.get(username=blocker)
         v = blocker.viewer_set.filter(viewer=blockee)
-        #print(v)
         for relation in v:
             relation.delete()
-        #print(v)
+    return True

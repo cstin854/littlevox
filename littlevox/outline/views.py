@@ -212,6 +212,27 @@ def process_message(request):
     return redirect('outline:user_splashpage', user=request.user.username)
 
 
+def blocked_users(request):
+    blocked_users_queryset = request.user.viewer_set.filter(is_blocked = True)
+    context = dict()
+    context['blocked_users'] = blocked_users_queryset
+    context['users_active'] = True
+    return render(request, 'outline/blocked.html', context)
+
+
+def unblock(request, user_to_unblock):
+    worked = remove_block(request.user.username, user_to_unblock)
+    if worked:
+        request.session['error_title'] = user_to_unblock + ' unblocked.'
+        msg = 'To add this user as a friend, search username ' + user_to_unblock
+        msg += ' on the "Users" page.'
+        request.session['error_message'] = msg
+    else:
+        request.session['error_title'] = 'Action unsuccessful.'
+        request.session['error_message'] = 'Your last action was unsuccessful. If you believe you are receiving this message in error, please contact us.'
+    return redirect('outline:user_splashpage', user=request.user.username)
+
+
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def users(request):
     DEFAULT_SEARCH_RESULTS = 15
