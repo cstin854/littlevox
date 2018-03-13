@@ -37,6 +37,7 @@ class Child(models.Model):
 
     def custom_save(self):
         other_children = Child.objects.filter(parent_guardian = self.parent_guardian)
+        self.name = self.url_friendly()
 
         # Checks to see if the parent-guardian has another child by the same
         # "friendly" (alphanumeric) name.

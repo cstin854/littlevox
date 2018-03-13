@@ -192,7 +192,7 @@ def friend_request(request, recipient):
         return render(request, 'outline/frrq.html', context)
 
 
-def child_dashboard(request, childname):
+def child_dashboard(request, childname, user):
     context = dict()
     try:
         context['child'] = request.user.child_set.get(name=childname)
@@ -243,7 +243,6 @@ def addword(request):
     context['addword_active'] = True
 
     if request.POST:
-        context['error_title'] = 'Form data'
         user = request.user
         child = user.child_set.get(name = request.POST['child'])
         date = parser.parse(request.POST['date'])
@@ -254,10 +253,26 @@ def addword(request):
         word.word = request.POST['word']
         word.notes = notes
         worked = word.custom_save()
-        context['error_message'] = str(worked) + ' ' + user.username + ' ' + child.name + ' ' + str(date) + ' ' + notes
+        #TODO: If the word saved successfully, should redirect to that child-word's page
+        if worked:
+            context['error_title'] = "Word " + word.word + " successfully added."
+            context['error_message'] = user.username + ' ' + child.name + ' ' + str(date) + ' ' + notes
+            return redirect('outline:child_word', user=request.user.username, childname=child.name, word=word.id)
+        else:
+            request.session['error_title'] = "Word " + word.word + " could not be added."
+            request.session['error_message'] = "This word is already in " + child.name + "'s vocabulary."
+            return redirect('outline:user_splashpage', user = request.user.username)
 
     context['children'] = request.user.child_set.all()
     context['today'] = time.strftime("%m/%d/%Y")
+    return render(request, 'outline/add_word.html', context)
+
+
+#This should be a view that shows information about the word-child connection.
+def child_word(request):
+    context = dict()
+    context['error_title'] = 'Word added successfully.'
+    context['error_message'] = "TODO: Display something about the word."
     return render(request, 'outline/add_word.html', context)
 
 
