@@ -267,7 +267,19 @@ def addword(request):
             request.session['error_message'] = "This word is already in " + child.name + "'s vocabulary."
             return redirect('outline:user_splashpage', user = request.user.username)
 
-    context['children'] = request.user.child_set.all()
+    #Creates a list of the user's children to be passed through context.
+    children_sorted = []
+    children = request.user.child_set.all()
+    #Makes the default child appear first in the list
+    for child in children:
+        if child.is_default:
+            children_sorted.append(child)
+    #Followed by any other children
+    for child in children:
+        if not child.is_default:
+            children_sorted.append(child)
+
+    context['children'] = children_sorted
     context['today'] = time.strftime("%m/%d/%Y")
     return render(request, 'outline/add_word.html', context)
 
