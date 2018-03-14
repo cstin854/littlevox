@@ -2,15 +2,20 @@ from django.db import models
 import datetime
 from django.contrib.auth.models import User
 from . import etymology
+import random
 
 
 class Child(models.Model):
     parent_guardian = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=50)
     date_of_birth = models.DateField(default=datetime.date.today)
+    is_default = models.BooleanField()
 
     def __str__(self):
-        return self.parent_guardian.username + ' : ' + self.name
+        default_char = ''
+        if self.is_default:
+            default_char = '(default)'
+        return self.parent_guardian.username + ' : ' + self.name + ' ' + default_char
 
     def as_itemlist_item(self):
         item = ItemListObject()
@@ -42,11 +47,26 @@ class Child(models.Model):
         # Checks to see if the parent-guardian has another child by the same
         # "friendly" (alphanumeric) name.
         for child in other_children:
-            if self.url_friendly() == child.url_friendly():
+            if self.url_friendly() == child.url_friendly() and child.id != self.id:
                 return False
+
+        #If the parent/guardian has no other registered children, register this
+        #child as "default" for purposes of adding words.
+        if len(other_children) == 0:
+            self.is_default = True
+        else:
+            self.is_default = False
 
         self.save()
         return True
+
+    #Makes this child the default child. Un-defaults any other child.
+    def make_default(self):
+        for child in self.parent_guardian.child_set.all():
+            child.is_default = False
+            child.save()
+        self.is_default = True
+        self.save()
 
 
 class Word(models.Model):
@@ -330,3 +350,38 @@ def remove_block(blocker, blockee):
         for relation in v:
             relation.delete()
     return True
+
+
+#Gets the id of the child set as default for the given parent-guardian ID
+#Returns False if there was an error or the child object if no error.
+def get_default_child(parent_guardian_id):
+    #If the id isn't matched to a user, return False
+    try:
+        parent_guardian = User.objects.get(id=parent_guardian_id)
+    except:
+        return (False, 'No parent/guardian with that id #')
+
+    #If the PG has no children, return false.
+    children = parent_guardian.child_set.all()
+    if len(children) == 0:
+        return False
+
+    default_children = []
+    for child in children:
+        if child.is_default:
+            default_children.append(child)
+
+    #If there is more than one default child, set all children to is_default = False,
+    #then choose a child at random to set as default. Return that child object.
+    if len(default_children) > 1:
+        for ch in children:
+            ch.is_default = False
+            ch.save()
+        ch = random.choice(parent_guardian.child_set.all())
+        ch.is_default = True
+        ch.save()
+        return ch
+
+    #Otherwise, return the default child object.
+    else:
+        return default_children[0]
