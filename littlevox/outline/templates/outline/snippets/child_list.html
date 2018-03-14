@@ -1,7 +1,7 @@
 {% if child_list %}
 <div class="list-group">
     {% for child in child_list %}
-    <a href="/outline/{{ user }}/child/{{ child.url_friendly }}/" class="list-group-item">
+    <a href="/outline/child/{{ child.id }}/" class="list-group-item">
         <h4>{{ child }}</h4>
     </a>
     {% endfor %}

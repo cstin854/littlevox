@@ -34,8 +34,9 @@ def word_test(request):
     words = Word.objects.all()
     for word in words:
         html += '<br><h1>Word: ' + str(word.word) + '</h1>'
+        html += '<br><h2>id: ' + str(word.id) + '</h2>'
         html += '<br><h3>Date: ' + str(word.date) + '</h3>'
-        html += '<br>Etymology: ' + str(word.etymology)
+        html += '<br>Etymology: ' + str(word.etymology) + '<hr>'
     return HttpResponse(html)
 
 
@@ -88,9 +89,12 @@ def user_splashpage(request, user):
 
     if 'error_message' in request.session:
         context['error_message'] = request.session['error_message']
-        context['error_title'] = request.session['error_title']
         del request.session['error_message']
-        del request.session['error_title']
+        if 'error_title' in request.session:
+            context['error_title'] = request.session['error_title']
+            del request.session['error_title']
+        else:
+            context['error_title'] = 'Error'
         request.session.modified = True
 
     # If the page requested via POST
@@ -192,13 +196,13 @@ def friend_request(request, recipient):
         return render(request, 'outline/frrq.html', context)
 
 
-def child_dashboard(request, childname, user):
+def child_dashboard(request, childid):
     context = dict()
     try:
-        context['child'] = request.user.child_set.get(name=childname)
+        context['child'] = Child.objects.get(id=childid)
     except:
-        request.session['error_title'] = 'Child not found.'
-        request.session['error_message'] = 'No child by the name ' + childname + ' found in the list of children you have registered.'
+        request.session['error_title'] = 'Error'
+        request.session['error_message'] = 'Child not found.'
         return redirect('outline:user_splashpage', user=request.user.username)
     return render(request, 'outline/child_dashboard.html', context)
 
@@ -269,10 +273,13 @@ def addword(request):
 
 
 #This should be a view that shows information about the word-child connection.
-def child_word(request):
+def child_word(request, wordid):
     context = dict()
-    context['error_title'] = 'Word added successfully.'
-    context['error_message'] = "TODO: Display something about the word."
+    try:
+        word = Word.objects.get(id=wordid)
+    except:
+        pass
+    context['error_message'] = "TODO: Display something about the word: " + word.word
     return render(request, 'outline/add_word.html', context)
 
 
