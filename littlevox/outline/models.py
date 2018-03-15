@@ -105,6 +105,12 @@ class Word(models.Model):
     def age_at_acquisition(self):
         pass
 
+    def has_notes(self):
+        if self.note == "":
+            return False
+        else:
+            return True
+
 
 # Probably not the best way to do this, but this class provides a way for a user
 # to determine the users that will be able to view her content. Default is ';public;'

@@ -1,0 +1,20 @@
+{% extends 'outline/base.html' %}
+{% block title %}{{word.word}}{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="jumbotron">
+        <h1><span class="label label-primary">{{word.word}}</span></h3>
+        <h2>First spoken by <strong><a href="/outline/child/{{word.child.id}}/">{{word.child.name}}</a></strong> on {{word.date}}</h2>
+        <h3><span class="label label-info">Etymology</span></h3><i>{{word.etymology}}</i>
+        {% if word.has_notes %}
+            <h3><span class="label label-info">Notes</span></h3>
+            {{word.notes}}
+        {% endif %}
+        <hr><a href="/outline/word/edit/{{word.id}}/">
+        <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
+        Edit this word.</a>
+    </div>
+</div>
+
+{% endblock %}

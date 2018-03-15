@@ -291,9 +291,11 @@ def child_word(request, wordid):
     try:
         word = Word.objects.get(id=wordid)
     except:
-        pass
-    context['error_message'] = "TODO: Display something about the word: " + word.word
-    return render(request, 'outline/add_word.html', context)
+        request.session['error_title'] = "Error"
+        request.session['error_message'] = "Word not found."
+        return redirect('outline:user_splashpage', user = request.user.username)
+    context['word'] = word
+    return render(request, 'outline/word_display.html', context)
 
 
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
