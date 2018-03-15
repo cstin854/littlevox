@@ -1,0 +1,13 @@
+<h3>{{child.name}}'s Vocabulary At a Glance</h3>
+{% if child.get_vocabulary %}
+    <ul class="list-group">
+    {% for word in child.get_vocabulary %}
+    <li class="list-group-item">
+        <a href="/outline/word/{{word.id}}/">{{ word.word }}</a>
+        <br>Date: {{word.date}}
+    </li>
+    {% endfor %}
+    </ul>
+{% else %}
+No vocabulary found
+{% endif %}

@@ -204,6 +204,7 @@ def child_dashboard(request, childid):
         request.session['error_title'] = 'Error'
         request.session['error_message'] = 'Child not found.'
         return redirect('outline:user_splashpage', user=request.user.username)
+    context['vocabulary'] = context['child'].word_set.all()
     return render(request, 'outline/child_dashboard.html', context)
 
 
@@ -261,7 +262,7 @@ def addword(request):
         if worked:
             context['error_title'] = "Word " + word.word + " successfully added."
             context['error_message'] = user.username + ' ' + child.name + ' ' + str(date) + ' ' + notes
-            return redirect('outline:child_word', user=request.user.username, childname=child.name, word=word.id)
+            return redirect('outline:child_word', wordid = word.id)
         else:
             request.session['error_title'] = "Word " + word.word + " could not be added."
             request.session['error_message'] = "This word is already in " + child.name + "'s vocabulary."

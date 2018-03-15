@@ -7,21 +7,14 @@
     <p>{{ dashboard_header }}</p>
 
     <ul class="nav nav-tabs">
-        <li class="active"><a data-toggle="tab" href="#recent">Recent</a></li>
-        <li><a data-toggle="tab" href="#stats">Graphs & Stats</a></li>
+        <li class="active"><a data-toggle="tab" href="#stats">Graphs & Stats</a></li>
         <li><a data-toggle="tab" href="#vocabulary">Vocabulary</a></li>
         <li><a data-toggle="tab" href="#profile">Profile</a></li>
     </ul>
 
     <div class="tab-content">
-        <div id="recent" class="tab-pane fade in active">
-            <h3>Recent</h3>
-            <hr>
-            Stuff about recent activity.
-        </div>
 
-
-        <div id="stats" class="tab-pane fade">
+        <div id="stats" class="tab-pane fade in active">
             <h3>Graphs and Stats</h3>
             <hr>
             Stuff about graphs and stats.
@@ -30,7 +23,7 @@
         <div id="vocabulary" class="tab-pane fade">
             <h3>Vocabulary</h3>
             <hr>
-            Stuff about vocabulary
+            {% include 'outline/snippets/vocabulary_at_a_glance.html' %}
         </div>
 
         <div id="profile" class="tab-pane fade">

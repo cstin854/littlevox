@@ -68,6 +68,13 @@ class Child(models.Model):
         self.is_default = True
         self.save()
 
+    def get_vocabulary(self):
+        words = self.word_set.all()
+        if len(words) == 0:
+            return False
+        else:
+            return words
+
 
 class Word(models.Model):
     child = models.ForeignKey(Child, on_delete=models.CASCADE)
