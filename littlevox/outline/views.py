@@ -285,6 +285,20 @@ def addword(request):
     return render(request, 'outline/add_word.html', context)
 
 
+#Allows a user to edit a word
+def edit_word(request, wordid):
+    #Creates the context dict to be passed to the template
+    context = dict()
+    context['addword_active'] = True
+
+    #If the user requests the page via POST
+    if request.POST:
+        pass
+
+    context['word'] = Word.objects.get(id=wordid)
+    return render(request, 'outline/edit_word.html', context)
+
+
 #This should be a view that shows information about the word-child connection.
 def child_word(request, wordid):
     context = dict()

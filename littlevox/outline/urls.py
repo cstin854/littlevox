@@ -34,6 +34,7 @@ urlpatterns = [
     url(r'^addword/', views.addword, name='addword'),
     url(r'^addchild/', views.addchild, name='addchild'),
     url(r'^child/(?P<childid>[0-9]+)/', views.child_dashboard, name='child_dashboard'),
+    url(r'^word/edit/(?P<wordid>[0-9]+)/', views.edit_word, name='edit_word'),
     url(r'^word/(?P<wordid>[A-Za-z0-9]+)/', views.child_word, name='child_word'),
     url(r'^rm/(?P<user>[A-Za-z0-9]+)/', views.remove_viewer, name='remove_viewer'),
     url(r'^blocked_users/', views.blocked_users, name='blocked_users'),
