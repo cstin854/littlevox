@@ -286,13 +286,29 @@ def edit_word(request, wordid):
     context = dict()
     context['addword_active'] = True
 
-    #If the user requests the page via POST
-    if request.POST:
-        postData = dict(request.POST)
-        context['keys'] = str(postData.keys())
-        context['values'] = str(postData.values())
+    if 'error_message' in request.session:
+        context['error_message'] = request.session['error_message']
+        del request.session['error_message']
+        request.session.modified = True
+    if 'error_title' in request.session:
+        context['error_title'] = request.session['error_title']
+        del request.session['error_title']
+        request.session.modified = True
 
     word = Word.objects.get(id=wordid)
+
+    #If the user requests the page via POST
+    if request.POST:
+        post = request.POST
+        child = word.child.parent_guardian.child_set.get(name=post['child'])
+        result = word.overwrite(child=child,word=post['word'],
+        date=post['date'],note=post['notes'])
+        if result:
+            return redirect('outline:child_word', wordid = word.id)
+        else:
+            context['error_message'] = "Could not be added/edited. This word may already by in " + child.name + "'s vocabulary."
+            context['error_title'] = post['word']
+
     context['word'] = word
     context['date'] = word.get_date()
 

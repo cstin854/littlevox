@@ -3,7 +3,7 @@ import datetime
 from django.contrib.auth.models import User
 from . import etymology
 import random
-
+from dateutil import parser
 
 class Child(models.Model):
     parent_guardian = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -101,8 +101,36 @@ class Word(models.Model):
         self.save()
         return True
 
-    def overwrite(self):
-        pass
+    def overwrite(self, child=None, word=None, note=None, date=None):
+
+        if child == None:
+            child = self.child
+        if word == None:
+            word = self.word
+        if note == None:
+            note = self.note
+        if date == None:
+            date = self.date
+
+        # If the date is different than the object's current date,
+        # then make sure to parse the new date.
+        if date != self.date:
+            date = parser.parse(date)
+
+        if word != self.word:
+            current_vocab = Word.objects.filter(child = self.child)
+
+            for w in current_vocab:
+                if w.word == word:
+                    return False
+
+        self.word = word
+        self.date = date
+        self.note = note
+        self.child = child
+        self.set_etymology()
+        self.save()
+        return True
 
     #TODO: Make this work!
     def age_at_acquisition(self):
