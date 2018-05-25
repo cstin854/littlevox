@@ -101,6 +101,9 @@ class Word(models.Model):
         self.save()
         return True
 
+    def overwrite(self):
+        pass
+
     #TODO: Make this work!
     def age_at_acquisition(self):
         pass
@@ -110,6 +113,9 @@ class Word(models.Model):
             return False
         else:
             return True
+
+    def get_date(self):
+        return str(self.date)
 
 
 # Probably not the best way to do this, but this class provides a way for a user

@@ -1,16 +1,47 @@
 {% extends 'outline/base.html' %}
-{% block title %}{{word.word}}{% endblock %}
+
+{% block title %}
+Edit word "{{word.word}}"
+{% endblock %}
 
 {% block body %}
+<br>
+{% if keys %}
+    {{ keys }}
+    {{ values }}
+{% endif %}
 <div class="container">
-    <div class="jumbotron">
-        <h1><span class="label label-primary">{{word.word}}</span></h3>
-        <h2>First spoken by <strong><a href="/outline/child/{{word.child.id}}/">{{word.child.name}}</a></strong> on {{word.date}}</h2>
-        <h3><span class="label label-info">Etymology</span></h3><i>{{word.etymology}}</i>
-        {% if word.has_notes %}
-            <h3><span class="label label-info">Notes</span></h3>
-            {{word.notes}}
-        {% endif %}
+    <h2>Edit word <i>"{{ word.word }}"</i></h2>
+    <div class="col-md-6">
+    <form action="" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="id_child">Child</label>
+            <select class="form-control" required id="id_child" name="child">
+                    <option>{{ word.child.name }}</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="id_word">Word</label>
+            <input type="text" class="form-control" required id="id_word" name="word" value="{{word.word}}">
+        </div>
+
+        <div class="form-group">
+            <label for "date">Date</label><br>
+            <input type="date" name="date" value="{{date}}">
+        </div>
+
+        <div class="form-group">
+            <label for="notes">Comments:</label>
+            <textarea class="form-control" rows="5" id="id_notes" name="notes">{{word.note}}</textarea>
+        </div>
+
+        <div class="btn-group btn-group-lg">
+            <button type="submit" class="btn btn-default">Submit</button>
+        </div>
+
+    </form>
     </div>
 </div>
 

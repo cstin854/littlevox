@@ -251,7 +251,7 @@ def addword(request):
         user = request.user
         child = user.child_set.get(name = request.POST['child'])
         date = parser.parse(request.POST['date'])
-        notes = request.POST['notes']
+        notes = request.POST['note']
         word = Word()
         word.child = child
         word.date = date
@@ -293,11 +293,15 @@ def edit_word(request, wordid):
 
     #If the user requests the page via POST
     if request.POST:
-        pass
+        postData = dict(request.POST)
+        context['keys'] = str(postData.keys())
+        context['values'] = str(postData.values())
 
-    context['word'] = Word.objects.get(id=wordid)
+    word = Word.objects.get(id=wordid)
+    context['word'] = word
+    context['date'] = word.get_date()
+
     return render(request, 'outline/edit_word.html', context)
-
 
 #This should be a view that shows information about the word-child connection.
 def child_word(request, wordid):
