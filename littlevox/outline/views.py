@@ -2,10 +2,6 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from .models import Child, Word, ItemListObject, Message
 from django.contrib.auth.models import User
-from django.views.generic import View
-from django.views.decorators.cache import patch_cache_control
-from functools import wraps
-from django.urls import reverse
 from django.shortcuts import redirect
 from django.contrib.auth import authenticate, login, logout
 from math import ceil as ceiling
@@ -251,17 +247,16 @@ def addword(request):
         user = request.user
         child = user.child_set.get(name = request.POST['child'])
         date = parser.parse(request.POST['date'])
-        notes = request.POST['note']
         word = Word()
         word.child = child
         word.date = date
         word.word = request.POST['word']
-        word.notes = notes
+        word.note = request.POST['notes']
         worked = word.custom_save()
         #TODO: If the word saved successfully, should redirect to that child-word's page
         if worked:
-            context['error_title'] = "Word " + word.word + " successfully added."
-            context['error_message'] = user.username + ' ' + child.name + ' ' + str(date) + ' ' + notes
+            request.session['error_title'] = "Word " + word.word + " successfully added."
+            request.session['error_message'] = user.username + ' ' + child.name + ' ' + str(date) + ' ' + word.note
             return redirect('outline:child_word', wordid = word.id)
         else:
             request.session['error_title'] = "Word " + word.word + " could not be added."
@@ -306,6 +301,15 @@ def edit_word(request, wordid):
 #This should be a view that shows information about the word-child connection.
 def child_word(request, wordid):
     context = dict()
+    if 'error_message' in request.session:
+        context['error_message'] = request.session['error_message']
+        del request.session['error_message']
+        request.session.modified = True
+
+    if 'error_title' in request.session:
+        context['error_title'] = request.session['error_title']
+        del request.session['error_title']
+        request.session.modified = True
     try:
         word = Word.objects.get(id=wordid)
     except:
