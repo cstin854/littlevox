@@ -8,6 +8,7 @@ from math import ceil as ceiling
 from .simple_search import get_matches
 from random import sample
 from django.views.decorators.cache import cache_control
+from django.contrib.auth.decorators import login_required
 from .helper_functions import easy_today
 from .models import *
 import time
@@ -19,7 +20,7 @@ def index(request, context={}):
     else:
         return redirect('outline:login_view')
 
-
+@login_required
 def addchild(request):
     return index(request, context={'error_message': 'This view is not hooked up yet.'})
 
@@ -46,7 +47,7 @@ def logout_view(request):
     context['error_message'] = 'You have been logged out.'
     return index(request, context)
 
-
+@login_required
 def remove_viewer(request, user):
     if request.POST:  # if POSt data received
         if 'revoke' in request.POST:  # if the requester confirmed removing "viewer" from auth'd viewers:
@@ -80,6 +81,7 @@ def remove_viewer(request, user):
 # TODO: get_object_or_404 with user
 # this view is just used for testing permissions stuff.
 # Can eventually be deleted.
+@login_required
 def user_splashpage(request, user):
     context = dict()
 
@@ -165,6 +167,7 @@ def user_splashpage(request, user):
             return render(request, 'outline/dashboard.html', context)
 
 
+@login_required
 def friend_request(request, recipient):
     context = dict()
     context['users_active'] = True
@@ -192,6 +195,7 @@ def friend_request(request, recipient):
         return render(request, 'outline/frrq.html', context)
 
 
+@login_required
 def child_dashboard(request, childid):
     context = dict()
     try:
@@ -204,6 +208,7 @@ def child_dashboard(request, childid):
     return render(request, 'outline/child_dashboard.html', context)
 
 
+@login_required
 def process_message(request):
     if request.POST:
         if request.POST['message_option'] == 'accept':
@@ -218,6 +223,7 @@ def process_message(request):
     return redirect('outline:user_splashpage', user=request.user.username)
 
 
+@login_required
 def blocked_users(request):
     blocked_users_queryset = request.user.viewer_set.filter(is_blocked = True)
     context = dict()
@@ -226,6 +232,7 @@ def blocked_users(request):
     return render(request, 'outline/blocked.html', context)
 
 
+@login_required
 def unblock(request, user_to_unblock):
     worked = remove_block(request.user.username, user_to_unblock)
     if worked:
@@ -239,7 +246,12 @@ def unblock(request, user_to_unblock):
     return redirect('outline:user_splashpage', user=request.user.username)
 
 
+@login_required
 def addword(request):
+
+    if request.user.username == '':
+        return redirect('outline:login_view')
+
     context = dict()
     context['addword_active'] = True
 
@@ -280,6 +292,7 @@ def addword(request):
     return render(request, 'outline/add_word.html', context)
 
 
+@login_required
 #Allows a user to edit a word
 def edit_word(request, wordid):
     #Creates the context dict to be passed to the template
@@ -314,7 +327,9 @@ def edit_word(request, wordid):
 
     return render(request, 'outline/edit_word.html', context)
 
+
 #This should be a view that shows information about the word-child connection.
+@login_required
 def child_word(request, wordid):
     context = dict()
     if 'error_message' in request.session:
@@ -337,6 +352,7 @@ def child_word(request, wordid):
 
 
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
+@login_required
 def users(request):
     DEFAULT_SEARCH_RESULTS = 15
     context = dict()
@@ -580,19 +596,6 @@ def itemlist(request, context={}):
 
     return render(request, 'outline/list_template.html', context)
 
-#TODO: This is a temporary view for development only.
-def all_child_list(request):
-    children = sample(list(Child.objects.all()), min(20, len(Child.objects.all())))
-    child_items = []
-    for child in children:
-        child_items.append(child.as_itemlist_item())
-    context = dict()
-    context['num_per_row'] = 3
-    context['title'] = 'All children'
-    context['intro_text'] = 'List of all children. For development only.'
-    context['list_of_items'] = child_items
-    return itemlist(request, context)
-
 
 # This function creates a grid of ItemListObject(s), given a list of ItemListObject(s).
 def itemlist_gridder(itemlist, num_per_row=3):
@@ -628,23 +631,15 @@ def email_valid(email):
 
 
 def is_alpha(string):
-    string = string.lower()
-    if string == 'a' or string == 'b' or string == 'c' or string == 'd' or string == 'e' or string == 'f' or string == 'g':
-        return True
-    elif string == 'h' or string == 'i' or string == 'j' or string == 'k' or string == 'l' or string == 'm':
-        return True
-    elif string == 'n' or string == 'o' or string == 'p' or string == 'q' or string == 'r' or string == 's':
-        return True
-    elif string == 't' or string == 'u' or string == 'v' or string == 'w' or string == 'x' or string == 'y' or string == 'x':
+    string = string.lower().strip()
+    if string in 'abcdefghijklmnopqrstuvwxyz':
         return True
     return False
 
 
 def is_numeral(char):
     char = str(char).strip()
-    if char == '1' or char == '2' or char == '3' or char == '4' or char == '5' or char == '6' or char == '7' or char == '8':
-        return True
-    elif char == '0' or char == '9':
+    if char in '0123456789':
         return True
     return False
 
