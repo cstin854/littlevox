@@ -21,7 +21,6 @@ app_name = 'outline'
 
 urlpatterns = [
     url(r'^$', views.index, name='index'),
-    url(r'^word_test/', views.word_test, name='word_test'),
     url(r'^user/(?P<user>[A-Za-z0-9]+)/$', views.user_splashpage, name='user_splashpage'),
     url(r'^logout/$', views.logout_view, name='logout'),
     url(r'^login/$', views.login_view, name='login_view'),

@@ -1,8 +1,6 @@
-from django.shortcuts import render
-from django.http import HttpResponse
+from django.shortcuts import render, redirect
 from .models import Child, Word, ItemListObject, Message
 from django.contrib.auth.models import User
-from django.shortcuts import redirect
 from django.contrib.auth import authenticate, login, logout
 from math import ceil as ceiling
 from .simple_search import get_matches
@@ -23,18 +21,6 @@ def index(request, context={}):
 @login_required
 def addchild(request):
     return index(request, context={'error_message': 'This view is not hooked up yet.'})
-
-
-# TODO: This is just a temp view to show all word objects.
-def word_test(request):
-    html = ''
-    words = Word.objects.all()
-    for word in words:
-        html += '<br><h1>Word: ' + str(word.word) + '</h1>'
-        html += '<br><h2>id: ' + str(word.id) + '</h2>'
-        html += '<br><h3>Date: ' + str(word.date) + '</h3>'
-        html += '<br>Etymology: ' + str(word.etymology) + '<hr>'
-    return HttpResponse(html)
 
 
 def logout_view(request):
