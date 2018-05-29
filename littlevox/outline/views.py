@@ -149,7 +149,7 @@ def user_splashpage(request, user):
             context['dashboard_header'] = "Welcome! You are viewing " + user.username + "'s dashboard."
             context['is_owner'] = False
 
-            # Eventually, this should be its own template, dashboard_visitor.html
+            # TODO: Eventually, this should be its own template, dashboard_visitor.html
             return render(request, 'outline/dashboard.html', context)
 
 
@@ -190,6 +190,18 @@ def child_dashboard(request, childid):
         request.session['error_title'] = 'Error'
         request.session['error_message'] = 'Child not found.'
         return redirect('outline:user_splashpage', user=request.user.username)
+
+    #TODO: If the requesting user isn't the child's PG, need to check
+    #if requesting user is a friend of the PG. If so, there should be a view for
+    #that. If not, then the requesting user should be redirect back to user
+    #splashpage. Right now, this kick's a non-PG user out of a child's dashboard
+    #regardless of friendship status.
+    parent_guardian = context['child'].parent_guardian
+    if request.user.username != parent_guardian.username:
+        request.session['error_title'] = 'Error'
+        request.session['error_message'] = 'You do not have rights to view this child.'
+        return redirect('outline:user_splashpage', user=request.user.username)
+
     context['vocabulary'] = context['child'].word_set.all()
     return render(request, 'outline/child_dashboard.html', context)
 
@@ -234,10 +246,6 @@ def unblock(request, user_to_unblock):
 
 @login_required
 def addword(request):
-
-    if request.user.username == '':
-        return redirect('outline:login_view')
-
     context = dict()
     context['addword_active'] = True
 
