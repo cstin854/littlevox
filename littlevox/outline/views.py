@@ -60,7 +60,7 @@ def logout_view(request, context=dict()):
     logout(request)
     context['error_title'] = username
     context['error_message'] = 'You have been logged out.'
-    return index(request, context)
+    return login_view(request,context=context)
 
 @login_required
 def remove_viewer(request, user, context=dict()):
@@ -433,7 +433,7 @@ def login_view(request, context=dict()):
         return render(request, 'outline/login_form.html', context)
 
 
-def register(request):
+def register(request, context=dict()):
     if request.POST:
 
         retry_flag = False
@@ -494,9 +494,11 @@ def register(request):
 
             if user is not None and user.is_active:
                 login(request, user)
+                request.session['error_title'] = 'Registration successful!'
+                request.session['errror_message'] = 'Welcome to LittleVox!'
                 return redirect('outline:index')
-
-                # return render(request, 'outline/registration_form_02.html', {'error_message': 'Valid registration!'})
+            else:
+                return redirect('outline:register', context={'error_message': 'There was an error'})
 
     else:
         return render(request, 'outline/registration_form.html', {'loginout_active': True})
