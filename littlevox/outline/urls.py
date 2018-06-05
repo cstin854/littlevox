@@ -25,7 +25,6 @@ urlpatterns = [
     url(r'^logout/$', views.logout_view, name='logout'),
     url(r'^login/$', views.login_view, name='login_view'),
     url(r'^register/$', views.register, name='register'),
-    url(r'^itemlist/$', views.blank_item_list, name='itemlist'),
     url(r'^users/', views.users, name='users'),
     url(r'^addword/', views.addword, name='addword'),
     url(r'^process_message/', views.process_message, name='process_message'),

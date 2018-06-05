@@ -12,14 +12,44 @@ from .models import *
 import time
 from dateutil import parser  #Used to convert string time to datetime object
 
-def index(request, context={}):
-    if request.user.username:
-        return redirect('outline:user_splashpage', user=request.user.username)
-    else:
-        return redirect('outline:login_view')
+#Decorator for handling error messages in a standardized way
+def errorDecorator(original_function):
+    def wrapper(request, **kwargs):
+        if 'user' in kwargs:
+            obj = kwargs.get('user')
+        elif 'recipient' in kwargs:
+            obj = kwargs.get('recipient')
+        elif 'childid' in kwargs:
+            obj = kwargs.get('childid')
+        elif 'user_to_unblock' in kwargs:
+            obj = kwargs.get('user_to_unblock')
+        elif 'wordid' in kwargs:
+            obj = kwargs.get('wordid')
+        else:
+            obj = False
+        context = kwargs.get('context', dict())
+
+        if 'error_message' in request.session:
+            context['error_message'] = request.session['error_message']
+            del request.session['error_message']
+            if 'error_title' in request.session:
+                context['error_title'] = request.session['error_title']
+                del request.session['error_title']
+            else:
+                context['error_title'] = 'Error'
+            request.session.modified = True
+        if obj != False:
+            return original_function(request,obj,context)
+        else:
+            return original_function(request,context)
+    return wrapper
 
 @login_required
-def addchild(request):
+def index(request, context=dict()):
+    return redirect('outline:user_splashpage', user=request.user.username)
+
+@login_required
+def addchild(request, context=dict()):
     return index(request, context={'error_message': 'This view is not hooked up yet.'})
 
 
@@ -34,7 +64,7 @@ def logout_view(request):
     return index(request, context)
 
 @login_required
-def remove_viewer(request, user):
+def remove_viewer(request, user, context=dict()):
     if request.POST:  # if POSt data received
         if 'revoke' in request.POST:  # if the requester confirmed removing "viewer" from auth'd viewers:
             disintegrate_friendship(request.user.username, request.POST['viewer'])
@@ -44,113 +74,74 @@ def remove_viewer(request, user):
 
     else:  # if no POST data...
 
-        if request.user.username:
-            context = dict()
-            requester = User.objects.get(username=request.user.username)
-            try:
-                viewer = requester.viewer_set.get(viewer=user)
-            except:
-                request.session['error_message'] = "Privileges cannot be revoked because that user does not have" \
-                                                   " permissions to view your profile."
-                return redirect('outline:user_splahspage', user=requester)
+        requester = User.objects.get(username=request.user.username)
+        try:
+            viewer = requester.viewer_set.get(viewer=user)
+        except:
+            request.session['error_message'] = "Privileges cannot be revoked because that user does not have" \
+                                               " permissions to view your profile."
+            return redirect('outline:user_splahspage', user=requester)
 
-            context['viewer'] = viewer
-            context['requester'] = requester
-            context['dashboard_active'] = True
+        context['viewer'] = viewer
+        context['requester'] = requester
+        context['dashboard_active'] = True
 
-            return render(request, 'outline/remove_viewer_template.html', context)
-
-        else:
-            return redirect('outline:index')
+        return render(request, 'outline/remove_viewer_template.html', context)
 
 
-# TODO: get_object_or_404 with user
-# this view is just used for testing permissions stuff.
-# Can eventually be deleted.
+# Main user view upon login.
 @login_required
-def user_splashpage(request, user):
-    context = dict()
+@errorDecorator
+def user_splashpage(request, user, context=dict()):
 
-    if 'error_message' in request.session:
-        context['error_message'] = request.session['error_message']
-        del request.session['error_message']
-        if 'error_title' in request.session:
-            context['error_title'] = request.session['error_title']
-            del request.session['error_title']
-        else:
-            context['error_title'] = 'Error'
-        request.session.modified = True
+    try:
+        user = User.objects.get(username=user)
+    except:
+        request.session['error_message'] = "That user does not exist."
+        request.session['error_title'] = str(user)
+        return redirect('outline:users')
 
-    # If the page requested via POST
-    if request.POST:
-        request.session['error_title'] = "Processing test."
-        msg = ''
-        for key, val in request.POST.items():
-            msg += "Key = " + key + "<br>"
-            msg += "------Val = " + val + "<hr>"
-        request.session['error_message'] = msg
-        return redirect('outline:user_splashpage', user=request.user.username)
+    context['dashboard_active'] = True
+    context['user'] = user.username
 
-    # If the page requested via GET
+    # If this is user's own dashboard.
+    if request.user.username == user.username:
+
+        try:
+            context['viewer_list'] = list(user.viewer_set.all())
+        except:
+            context['viewer_list'] = False
+
+        try:
+            context['child_list'] = list(user.child_set.all())
+        except:
+            context['child_list'] = False
+
+        try:
+            context['messages'] = list(user.message_set.all())
+            context['number_of_messages'] = len(context['messages'])
+        except:
+            context['messages'] = False
+            context['number_of_messages'] = False
+
+        context['dashboard_header'] = "Welcome! This is your dashboard."
+        context['is_owner'] = True
+
+        return render(request, 'outline/dashboard.html', context)
+
+    # If this is not the user's dashboard.
     else:
 
         try:
-            user = User.objects.get(username=user)
+            context['child_list'] = list(user.child_set.all())
         except:
-            request.session['error_message'] = "That user does not exist."
-            return redirect('outline:users')
+            context['child_list'] = False
 
-        if 'error_message' in request.session:
-            context['error_message'] = request.session['error_message']
-            del request.session['error_message']
-            request.session.modified = True
+        context['dashboard_header'] = "Welcome! You are viewing " + user.username + "'s dashboard."
+        context['is_owner'] = False
 
-        if 'error_title' in request.session:
-            context['error_title'] = request.session['error_title']
-            del request.session['error_title']
-            request.session.modified = True
-
-        context['dashboard_active'] = True
-        context['user'] = user.username
-
-        # If this is user's own dashboard.
-        if request.user.username == user.username:
-
-            try:
-                context['viewer_list'] = list(user.viewer_set.all())
-            except:
-                context['viewer_list'] = False
-
-            try:
-                context['child_list'] = list(user.child_set.all())
-            except:
-                context['child_list'] = False
-
-            try:
-                context['messages'] = list(user.message_set.all())
-                context['number_of_messages'] = len(context['messages'])
-            except:
-                context['messages'] = False
-                context['number_of_messages'] = False
-
-            context['dashboard_header'] = "Welcome! This is your dashboard."
-            context['is_owner'] = True
-
-            return render(request, 'outline/dashboard.html', context)
-
-        # If this is not the user's dashboard.
-        else:
-
-            try:
-                context['child_list'] = list(user.child_set.all())
-            except:
-                context['child_list'] = False
-
-            context['dashboard_header'] = "Welcome! You are viewing " + user.username + "'s dashboard."
-            context['is_owner'] = False
-
-            # TODO: Eventually, this should be its own template, dashboard_visitor.html
-            return render(request, 'outline/dashboard.html', context)
+        # TODO: Eventually, this should be its own template, dashboard_visitor.html
+        return render(request, 'outline/dashboard.html', context)
 
 
 @login_required
@@ -347,15 +338,10 @@ def child_word(request, wordid):
 
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 @login_required
-def users(request):
+@errorDecorator
+def users(request, context=dict()):
     DEFAULT_SEARCH_RESULTS = 15
-    context = dict()
     context['users_active'] = True
-
-    if 'error_message' in request.session:
-        context['error_message'] = request.session['error_message']
-        del request.session['error_message']
-        request.session.modified = True
 
     # If landing on the page with GET method
     if not request.POST:
@@ -528,42 +514,6 @@ def register(request):
 
     else:
         return render(request, 'outline/registration_form.html', {'loginout_active': True})
-
-
-# Used to R&D the item_list display. Just makes dummy data for display.
-def blank_item_list(request):
-    # Generating a dummy list of items to display, if none is provided:
-    context = dict()
-    context['error_message'] = 'Empty itemlist requested. Showing dummy content.'
-    context['error_title'] = 'No items requested'
-    context['num_per_row'] = 3
-    context['list_of_items'] = []
-    for k in range(72):
-        title = 'Title of item #' + str(k + 1)
-        if k % 4 == 0:
-            imgsrc = False
-        elif k % 5 == 0:
-            imgsrc = "https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/"
-            imgsrc += "Danny_DeVito_by_Gage_Skidmore.jpg/170px-Danny_DeVito_by_Gage_Skidmore.jpg"
-        else:
-            imgsrc = "https://img.cinemablend.com/cb/9/1/9/4/f/f/9194ff31206ae73db1cc2ae3c8ba0647"
-            imgsrc += "d71fc6f8c0a4ef9f5ed223fec4bc6cba.jpg"
-
-        if k % 4 != 0:
-            text = "Some other explanatory text."
-        else:
-            text = False
-
-        if k % 10 == 0:
-            link_text = "Text 4 buttonz"
-        else:
-            link_text = "Click!"
-
-        link = "http://www.amazon.com/"
-        context['list_of_items'].append(ItemListObject(title=title, imgsrc=imgsrc, text=text,
-                                                       link_text=link_text,
-                                                       link=link))  # TODO: Purpose of the following view is to have a nice way to display a set of objects. Made good strides.
-    return itemlist(request, context)
 
 
 def itemlist(request, context={}):
