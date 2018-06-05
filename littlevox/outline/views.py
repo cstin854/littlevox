@@ -46,7 +46,7 @@ def errorDecorator(original_function):
 
 @login_required
 def index(request, context=dict()):
-    return redirect('outline:user_splashpage', user=request.user.username, context=context)
+    return user_splashpage(request, user=request.user.username, context=context)
 
 @login_required
 def addchild(request, context=dict()):
