@@ -46,19 +46,18 @@ def errorDecorator(original_function):
 
 @login_required
 def index(request, context=dict()):
-    return redirect('outline:user_splashpage', user=request.user.username)
+    return redirect('outline:user_splashpage', user=request.user.username, context=context)
 
 @login_required
 def addchild(request, context=dict()):
-    return index(request, context={'error_message': 'This view is not hooked up yet.'})
+    return index(request, context={'error_title': 'This view is not hooked up yet.'})
 
-
-def logout_view(request):
+@errorDecorator
+def logout_view(request, context=dict()):
     username = request.user.username
     if not username:
         username = ''
     logout(request)
-    context = dict()
     context['error_title'] = username
     context['error_message'] = 'You have been logged out.'
     return index(request, context)
@@ -145,8 +144,8 @@ def user_splashpage(request, user, context=dict()):
 
 
 @login_required
-def friend_request(request, recipient):
-    context = dict()
+@errorDecorator
+def friend_request(request, recipient, context=dict()):
     context['users_active'] = True
 
     if request.POST:
@@ -173,8 +172,8 @@ def friend_request(request, recipient):
 
 
 @login_required
-def child_dashboard(request, childid):
-    context = dict()
+@errorDecorator
+def child_dashboard(request, childid, context=dict()):
     try:
         context['child'] = Child.objects.get(id=childid)
     except:
@@ -198,7 +197,8 @@ def child_dashboard(request, childid):
 
 
 @login_required
-def process_message(request):
+@errorDecorator
+def process_message(request, context=dict()):
     if request.POST:
         if request.POST['message_option'] == 'accept':
             initiate_friendship(recipient, sender)
@@ -213,16 +213,17 @@ def process_message(request):
 
 
 @login_required
-def blocked_users(request):
+@errorDecorator
+def blocked_users(request, context=dict()):
     blocked_users_queryset = request.user.viewer_set.filter(is_blocked = True)
-    context = dict()
     context['blocked_users'] = blocked_users_queryset
     context['users_active'] = True
     return render(request, 'outline/blocked.html', context)
 
 
 @login_required
-def unblock(request, user_to_unblock):
+@errorDecorator
+def unblock(request, user_to_unblock, context=dict()):
     worked = remove_block(request.user.username, user_to_unblock)
     if worked:
         request.session['error_title'] = user_to_unblock + ' unblocked.'
@@ -236,8 +237,8 @@ def unblock(request, user_to_unblock):
 
 
 @login_required
-def addword(request):
-    context = dict()
+@errorDecorator
+def addword(request, context=dict()):
     context['addword_active'] = True
 
     if request.POST:
@@ -277,21 +278,12 @@ def addword(request):
     return render(request, 'outline/add_word.html', context)
 
 
-@login_required
 #Allows a user to edit a word
-def edit_word(request, wordid):
+@login_required
+@errorDecorator
+def edit_word(request, wordid, context=dict()):
     #Creates the context dict to be passed to the template
-    context = dict()
     context['addword_active'] = True
-
-    if 'error_message' in request.session:
-        context['error_message'] = request.session['error_message']
-        del request.session['error_message']
-        request.session.modified = True
-    if 'error_title' in request.session:
-        context['error_title'] = request.session['error_title']
-        del request.session['error_title']
-        request.session.modified = True
 
     word = Word.objects.get(id=wordid)
 
@@ -315,17 +307,8 @@ def edit_word(request, wordid):
 
 #This should be a view that shows information about the word-child connection.
 @login_required
-def child_word(request, wordid):
-    context = dict()
-    if 'error_message' in request.session:
-        context['error_message'] = request.session['error_message']
-        del request.session['error_message']
-        request.session.modified = True
-
-    if 'error_title' in request.session:
-        context['error_title'] = request.session['error_title']
-        del request.session['error_title']
-        request.session.modified = True
+@errorDecorator
+def child_word(request, wordid, context=dict()):
     try:
         word = Word.objects.get(id=wordid)
     except:
@@ -405,7 +388,8 @@ def user_to_itemlist_item(user, viewer=False):
     return ItemListObject(title=title, imgsrc=imgsrc, text='', link=link, link_text=link_text)
 
 
-def login_view(request):
+@errorDecorator
+def login_view(request, context=dict()):
     # If POST
     if request.POST:
 
@@ -423,28 +407,30 @@ def login_view(request):
                 print('Do something! Used requested to be remembered.')
             # Logs the user in.
             login(request, user)
-            return index(request,
-                         {'error_title': 'Welcome ' + username + '!', 'error_message': 'You have been logged in.'})
+            request.session['error_title'] = 'Welcome!'
+            request.session['error_message'] = request.user.username + ' logged in.'
+            return redirect('outline:user_splashpage', user = request.user.username)
         # Otherwise, redirect back to the login screen with an error message.
         else:
             error_message = 'There was an error with your login attempt. Please check your username and '
             error_message += 'password again. If you believe you are receiving this message in error, '
             error_message += 'please contact us.'
-            return render(request, 'outline/login_form.html', {'error_message': error_message,
-                                                               'loginout_active': True})
+            context['error_message'] = error_message
+            context['error_title'] = 'Error:'
+            return render(request, 'outline/login_form.html', context)
     # If GET
     else:
         # If the user is already logged in, prompt the user to logout or contact admin.
         if request.user.username:
-            context = {}
             error_message = 'You are already logged in as user ' + request.user.username
             error_message += '. Please log out if you believe this is in error or '
             error_message += 'if you would like to log in as another user.'
-            context['error_message'] = error_message
-            context['error_title'] = 'Already logged in:'
-            return index(request, context)
+            request.session['error_message'] = error_message
+            request.session['error_title'] = 'Already logged in:'
+            return redirect('outline:user_splashpage', user = request.user.username)
         # Otherwise, render the login_form.
-        return render(request, 'outline/login_form.html', {'loginout_active': True})
+        context['loginout_active'] = True
+        return render(request, 'outline/login_form.html', context)
 
 
 def register(request):
