@@ -63,8 +63,9 @@ def logout_view(request, context=dict()):
     return login_view(request,context=context)
 
 @login_required
+@errorDecorator
 def remove_viewer(request, user, context=dict()):
-    if request.POST:  # if POSt data received
+    if request.POST:  # if POST data received
         if 'revoke' in request.POST:  # if the requester confirmed removing "viewer" from auth'd viewers:
             disintegrate_friendship(request.user.username, request.POST['viewer'])
 
@@ -88,6 +89,35 @@ def remove_viewer(request, user, context=dict()):
         return render(request, 'outline/remove_viewer_template.html', context)
 
 
+@login_required
+@errorDecorator
+def remove_word(request, wordid, context=dict()):
+    try:
+        context['word'] = Word.objects.get(id=wordid)
+    except:
+        errorLog(request,'Error','Word not found.')
+        return redirect('outline:index')
+    return render(request, 'outline/remove_word_template.html', context)
+
+@login_required
+@errorDecorator
+def remove_word_execute(request, wordid, context=dict()):
+    if not request.POST or 'selection' not in request.POST:
+        errorLog(request,'Error','You reached the last page in error.')
+        return redirect('outline:index')
+    try:
+        word = Word.objects.get(id=wordid)
+        child = word.child.id
+    except:
+        errorLog(request,'Error','Word not found.')
+        return redirect('outline:index')
+    selection = request.POST['selection']
+    if selection == 'yes':
+        word.delete()
+        errorLog(request,'Success','Word removed.')
+    return redirect('outline:child_dashboard', childid=child)
+
+
 # Main user view upon login.
 @login_required
 @errorDecorator
@@ -96,8 +126,7 @@ def user_splashpage(request, user, context=dict()):
     try:
         user = User.objects.get(username=user)
     except:
-        request.session['error_message'] = "That user does not exist."
-        request.session['error_title'] = str(user)
+        errorLog(request,str(user),"That user does not exist.")
         return redirect('outline:users')
 
     context['dashboard_active'] = True
@@ -177,8 +206,7 @@ def child_dashboard(request, childid, context=dict()):
     try:
         context['child'] = Child.objects.get(id=childid)
     except:
-        request.session['error_title'] = 'Error'
-        request.session['error_message'] = 'Child not found.'
+        errorLog(request,'Error:','Child not found.')
         return redirect('outline:user_splashpage', user=request.user.username)
 
     #TODO: If the requesting user isn't the child's PG, need to check
@@ -188,8 +216,7 @@ def child_dashboard(request, childid, context=dict()):
     #regardless of friendship status.
     parent_guardian = context['child'].parent_guardian
     if request.user.username != parent_guardian.username:
-        request.session['error_title'] = 'Error'
-        request.session['error_message'] = 'You do not have rights to view this child.'
+        errorLog(request,'Error','You do not have rights to view this.')
         return redirect('outline:user_splashpage', user=request.user.username)
 
     context['vocabulary'] = context['child'].word_set.all()
@@ -290,9 +317,9 @@ def edit_word(request, wordid, context=dict()):
     #If the user requests the page via POST
     if request.POST:
         post = request.POST
-        child = word.child.parent_guardian.child_set.get(name=post['child'])
-        result = word.overwrite(child=child,word=post['word'],
-        date=post['date'],note=post['notes'])
+        child = word.child
+        result = word.overwrite(child=child,word=word.word,
+        date=word.date,note=word.note)
         if result:
             return redirect('outline:child_word', wordid = word.id)
         else:
@@ -433,6 +460,7 @@ def login_view(request, context=dict()):
         return render(request, 'outline/login_form.html', context)
 
 
+@errorDecorator
 def register(request, context=dict()):
     if request.POST:
 
@@ -591,3 +619,9 @@ def get_list_all_users():
     for user in users:
         user_list.append(user.username)
     return user_list
+
+def errorLog(request,errorTitle,errorMessage):
+    request.session['error_title'] = errorTitle
+    request.session['error_message'] = errorMessage
+    request.session.modified = True
+    return
