@@ -203,6 +203,7 @@ def friend_request(request, recipient, context=dict()):
 @login_required
 @errorDecorator
 def child_dashboard(request, childid, context=dict()):
+    DEFAULT_RESULTS = 8
     try:
         context['child'] = Child.objects.get(id=childid)
     except:
@@ -219,7 +220,12 @@ def child_dashboard(request, childid, context=dict()):
         errorLog(request,'Error','You do not have rights to view this.')
         return redirect('outline:user_splashpage', user=request.user.username)
 
-    context['vocabulary'] = context['child'].word_set.all()
+    allWords = context['child'].word_set.all()
+    vocab = list(allWords)
+    vocab.sort(key=lambda x: x.date, reverse=True)
+    numResults = min(DEFAULT_RESULTS, len(allWords))
+
+    context['vocabulary'] = vocab[:numResults].copy()
     return render(request, 'outline/child_dashboard.html', context)
 
 

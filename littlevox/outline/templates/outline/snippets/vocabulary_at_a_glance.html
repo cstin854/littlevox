@@ -1,7 +1,9 @@
-<h3>{{child.name}}'s Vocabulary At a Glance</h3>
-{% if child.get_vocabulary %}
+<h4><a href="#">{{child.name}}'s Full Vocabulary</a></h2>
+<hr>
+<h4>{{child.name}}'s Vocabulary At a Glance</h4>
+{% if vocabulary %}
     <ul class="list-group">
-    {% for word in child.get_vocabulary %}
+    {% for word in vocabulary %}
     <li class="list-group-item">
         <a href="/outline/word/{{word.id}}/">{{ word.word }}</a>
         <br>Date: {{word.date}}
