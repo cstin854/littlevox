@@ -1,0 +1,46 @@
+<br>
+<table class="table table-hover">
+  <tbody>
+    <tr>
+      <th scope="row">Name</th>
+      <td>{{child.name}}</td>
+    </tr>
+    <tr>
+      <th scope="row">Birthday</th>
+      <td>{{child.date_of_birth}}</td>
+    </tr>
+    <tr>
+      <th scope="row">Age</th>
+      <td>{{child.age}}</td>
+    </tr>
+    <tr>
+      <th scope="row">Primary Parent/Guardian</th>
+      <td>
+          <a href="/outline/user/{{child.parent_guardian.username}}/">
+            {{child.parent_guardian.username}}
+          </a>
+      </td>
+    </tr>
+    <tr>
+      <th scope="row">Default?</th>
+      <td>
+          {% if child.is_default %}
+              <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
+              &nbsp;Yes, this is the default child.
+          {% else %}
+              <span class="glyphicon glyphicon-star-empty" aria-hidden="true"></span>
+              &nbsp;No, this is not the default child.&nbsp;
+              <form action="/outline/child/{{child.id}}/" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="btn-group btn-group-sm">
+                        <button type="submit" class="btn btn-default" name="makedefault" value="{{child.id}}">
+                            (<span class="glyphicon glyphicon-star" aria-hidden="true"></span>
+                            &nbsp;Make default)
+                        </button>
+                    </div>
+              </form>
+          {% endif %}
+      </td>
+    </tr>
+  </tbody>
+</table>

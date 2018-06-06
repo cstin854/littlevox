@@ -203,6 +203,7 @@ def friend_request(request, recipient, context=dict()):
 @login_required
 @errorDecorator
 def child_dashboard(request, childid, context=dict()):
+
     DEFAULT_RESULTS = 8
     try:
         context['child'] = Child.objects.get(id=childid)
@@ -219,6 +220,13 @@ def child_dashboard(request, childid, context=dict()):
     if request.user.username != parent_guardian.username:
         errorLog(request,'Error','You do not have rights to view this.')
         return redirect('outline:user_splashpage', user=request.user.username)
+
+    if request.POST:
+        if 'makedefault' in request.POST:
+            context['child'].make_default()
+        context['error_title'] = "Success!"
+        msg = context['child'].name + " is now the default child for adding new words."
+        context['error_message'] = msg
 
     allWords = context['child'].word_set.all()
     vocab = list(allWords)

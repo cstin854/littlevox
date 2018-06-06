@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from . import etymology
 import random
 from dateutil import parser
+from math import ceil, floor
 
 class Child(models.Model):
     parent_guardian = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -75,6 +76,17 @@ class Child(models.Model):
         else:
             return words
 
+    def age(self):
+        now = datetime.datetime.now()
+        then = self.date_of_birth
+        then = parser.parse(str(then))
+        diff = now-then
+        days = diff.days
+        years = floor(days/365)
+        days = days - years*365
+        months = floor(days/(365.0/12.0))
+        return str(years) + ' years, ' + str(months) + ' months.'
+
 
 class Word(models.Model):
     child = models.ForeignKey(Child, on_delete=models.CASCADE)
@@ -134,7 +146,16 @@ class Word(models.Model):
 
     #TODO: Make this work!
     def age_at_acquisition(self):
-        pass
+        now = self.date
+        now = parser.parse(now)
+        then = self.child.date_of_birth
+        then = parser.parse(str(then))
+        diff = now-then
+        days = diff.days
+        years = floor(days/365)
+        days = days - years*365
+        months = floor(days/(365.0/12.0))
+        return str(years) + ' years, ' + str(months) + ' months.'
 
     def has_notes(self):
         if self.note == "":
