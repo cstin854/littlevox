@@ -445,11 +445,9 @@ def login_view(request, context=dict()):
             if not request.POST.get('remember_me', None):
                 print('Do something! User requested not to be remembered.')
             else:
-                print('Do something! Used requested to be remembered.')
+                print('Do something! User requested to be remembered.')
             # Logs the user in.
             login(request, user)
-            request.session['error_title'] = 'Welcome!'
-            request.session['error_message'] = request.user.username + ' logged in.'
             return redirect('outline:user_splashpage', user = request.user.username)
         # Otherwise, redirect back to the login screen with an error message.
         else:
@@ -524,7 +522,6 @@ def register(request, context=dict()):
             return render(request, 'outline/registration_form.html', {'error_message': error_message,
                                                                       'loginout_active': True})
         else:
-            # TODO: (1) Actually register the user, (2) Send to a splash page
             user = User()
             user.username = request.POST['username']
             user.set_password(request.POST['password'])
