@@ -1,0 +1,28 @@
+{% extends 'outline/base.html' %}
+{% block title %}Confirm remove {{child.name}}{% endblock %}
+
+{% block body %}
+
+<br>
+<div class="container-fluid">
+    <div class="jumbotron">
+        Heads up, {{ user }}! Are you sure you want to remove {{ child.name }}'s?
+        <br>
+        This action <b>cannot be undone</b> and will remove all of {{ child.name}}'s vocabulary.
+        <br>
+        <form action="/outline/rmchild/{{child.id}}/" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="radio">
+                <label><input type="radio" name="selection" value="yes">Yes, remove {{child.name}}.</label>
+            </div>
+            <div class="radio">
+                <label><input type="radio" name="selection" value="no">Cancel.</label>
+            </div>
+
+            <input type="hidden" value="{{ child.id }}" name="childid" />
+            <button type="submit" class="btn btn-default">Submit</button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

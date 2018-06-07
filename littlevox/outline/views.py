@@ -117,6 +117,28 @@ def remove_word_execute(request, wordid, context=dict()):
         errorLog(request,'Success','Word removed.')
     return redirect('outline:child_dashboard', childid=child)
 
+@login_required
+@errorDecorator
+def remove_child(request, childid, context=dict()):
+    try:
+        context['child'] = Child.objects.get(id=childid)
+    except:
+        errorLog(request,'Error','Child not found.')
+        return redirect('outline:index')
+
+    #If not POST, show remove child confirmation template
+    if not request.POST or 'selection' not in request.POST:
+        return render(request, 'outline/remove_child_template.html', context)
+
+    # Otherwise, remove the child or redirect, based on form data
+    selection = request.POST['selection']
+    # If the user confimed, then delete the child and return user to index.
+    if selection == 'yes':
+        context['child'].delete()
+        errorLog(request,'Success','Child removed.')
+        return redirect('outline:index')
+    # If the user decided to cancel, return the user to the child's dashboard.
+    return redirect('outline:child_dashboard', childid=childid)
 
 # Main user view upon login.
 @login_required

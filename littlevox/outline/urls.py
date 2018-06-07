@@ -36,6 +36,7 @@ urlpatterns = [
     url(r'^rm/(?P<user>[A-Za-z0-9]+)/', views.remove_viewer, name='remove_viewer'),
     url(r'^rmword/(?P<wordid>[0-9]+)/', views.remove_word, name='remove_word'),
     url(r'^rmword_confirm/(?P<wordid>[0-9]+)/', views.remove_word_execute, name='remove_word_execute'),
+    url(r'^rmchild/(?P<childid>[0-9]+)/', views.remove_child, name='remove_child'),
     url(r'^blocked_users/', views.blocked_users, name='blocked_users'),
     url(r'^unblock/(?P<user_to_unblock>[A-Za-z0-9]+)/', views.unblock, name='unblock'),
     url(r'^frrq/(?P<recipient>[A-Za-z0-9]+)/', views.friend_request, name='friend_request'),
