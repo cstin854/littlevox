@@ -144,14 +144,15 @@ class Word(models.Model):
         self.save()
         return True
 
-    #TODO: Make this work!
-    def age_at_acquisition(self):
+    def age_at_acquisition(self, raw=False):
         now = self.date
-        now = parser.parse(now)
+        now = parser.parse(str(now))
         then = self.child.date_of_birth
         then = parser.parse(str(then))
         diff = now-then
         days = diff.days
+        if raw:
+            return days
         years = floor(days/365)
         days = days - years*365
         months = floor(days/(365.0/12.0))

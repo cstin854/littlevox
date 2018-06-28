@@ -17,6 +17,7 @@ def strip_first_tag(string):
 
 
 def get_etymology(word):
+    word = word.strip().lower().replace(' ','%20')
     # Scrapes Wordnik to get the etymology of a word.
     page_url = 'http://www.wordnik.com/words/' + str(word)
 

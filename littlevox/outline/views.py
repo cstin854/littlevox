@@ -9,8 +9,10 @@ from django.views.decorators.cache import cache_control
 from django.contrib.auth.decorators import login_required
 from .helper_functions import easy_today
 from .models import *
+from bokeh.plotting import figure, output_file, save
 import time
 from dateutil import parser  #Used to convert string time to datetime object
+from bs4 import BeautifulSoup
 
 #Decorator for handling error messages in a standardized way
 def errorDecorator(original_function):
@@ -255,7 +257,38 @@ def child_dashboard(request, childid, context=dict()):
     vocab.sort(key=lambda x: x.date, reverse=True)
     numResults = min(DEFAULT_RESULTS, len(allWords))
 
+    # Creates a dummy plot using Bokeh
+    # prepare some data
+    x1 = [a.age_at_acquisition(raw=True) for a in vocab]
+    x1.reverse()
+    y1 = [x+1 for x in range(len(x1))]
+
+    # output to static HTML file
+    file_path = "littlevox/littlevox/outline/child_graphs/"+str(context['child'].id)+".html"
+    output_file(file_path)
+
+    # create a new plot with a title and axis labels
+    title = context['child'].name + "'s Vocabulary Growth over Time"
+    p = figure(title=title, x_axis_label='Age (days)', y_axis_label='Size of vocabulary (# of words)',
+    plot_height=300, plot_width=300, sizing_mode='scale_width')
+
+    # add a line renderer with legend and line thickness
+    p.line(x1, y1, legend="# of words in Vocabulary", line_width=2)
+
+    # save the results
+    path = save(p)
+    f = open(path,'r')
+    graph = f.read()
+    start = "<body>"
+    end = "</body>"
+    graph = (graph.split(start))[1].split(end)[0]
+    #soup = BeautifulSoup(path)
+    #graph = soup.body
+
+    context['graph'] = graph
     context['vocabulary'] = vocab[:numResults].copy()
+    context['bokeh'] = True
+
     return render(request, 'outline/child_dashboard.html', context)
 
 
